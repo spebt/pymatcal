@@ -45,10 +45,11 @@ for taskId in np.arange(taskIdMin, taskIdMax):
     imgVoxelIdy = imgVoxelIdyz // imageNxyz[2]
     imgVoxelIdz = imgVoxelIdyz % imageNxyz[2]
 
-    imageVoxelIds = np.array({imgVoxelIdx, imgVoxelIdy, imgVoxelIdz})
+    imageVoxelIds = np.array([imgVoxelIdx, imgVoxelIdy, imgVoxelIdz])
     imageVoxelCoords = imageVoxelIds / imageVxpms
-    geom = sensGeom[detGeomId]
+    geom = sensGeom[int(detGeomId)]
 
+    # Detector unit subdivision centroid coordinates
     xlin = np.linspace(geom[0], geom[1], detSubs[0] + 1)
     x_c = 0.5 * (xlin[1:] + xlin[:-1])
     ylin = np.linspace(geom[2], geom[3], detSubs[1] + 1)
@@ -57,6 +58,6 @@ for taskId in np.arange(taskIdMin, taskIdMax):
     z_c = 0.5 * (zlin[1:] + zlin[:-1])
     centers = np.array(np.meshgrid(x_c, y_c, z_c))
     centers = centers.T.reshape(detSubs.prod(), 3)
-
+    
     # if rank == 0:
     #     print("taskId %2d: (Det: %2d, Img: %2d)" % (taskId, detGeomId, imgVoxlId))

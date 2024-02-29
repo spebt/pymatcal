@@ -21,5 +21,8 @@ z_c = 0.5 * (zlin[1:] + zlin[:-1])
 centers = np.array(np.meshgrid(x_c, y_c, z_c))
 centers = centers.T.reshape(detSubs.prod(), 3)
 
-imageVxpms = np.asarray(yamlConfig["image"]["voxel per mm xyz"])
-print(1.0 / imageVxpms)
+imageVxpms = np.array(yamlConfig["image"]["voxel per mm xyz"])
+
+imageVoxelIds = np.array([10, 20, 30])
+
+print(np.__version__)
