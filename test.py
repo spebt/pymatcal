@@ -1,5 +1,6 @@
-import numpy as np
 import yaml
+import numpy as np
+import pyMatcal_routines as myfunc
 
 configFileName = "configs/config.yml"
 with open(configFileName, "r") as stream:
@@ -8,21 +9,34 @@ with open(configFileName, "r") as stream:
     except yaml.YAMLError as err:
         print(err)
 
-systemGeom = np.asarray(yamlConfig["detector geometry"])
-detSubs = np.asarray(yamlConfig["detector"]["crystal n subdivision xyz"])
-geom = systemGeom[2]
 
-xlin = np.linspace(geom[0], geom[1], detSubs[0] + 1)
-x_c = 0.5 * (xlin[1:] + xlin[:-1])
-ylin = np.linspace(geom[2], geom[3], detSubs[1] + 1)
-y_c = 0.5 * (ylin[1:] + ylin[:-1])
-zlin = np.linspace(geom[4], geom[5], detSubs[2] + 1)
-z_c = 0.5 * (zlin[1:] + zlin[:-1])
-centers = np.array(np.meshgrid(x_c, y_c, z_c))
-centers = centers.T.reshape(detSubs.prod(), 3)
+# Read in the geometry
+try:
+    systemGeom = np.asarray(yamlConfig["detector geometry"])
+    sensGeomIds = np.asarray(yamlConfig["detector"]["sensitive geometry indices"])
+    sensGeom = systemGeom[sensGeomIds]
+    detSubs = np.asarray(yamlConfig["detector"]["crystal n subdivision xyz"])
+    # Calculate Image space N subdivision and size.
+    imageDims = np.asarray(yamlConfig["image"]["dimension xyz"])
+    imageVxpms = np.asarray(yamlConfig["image"]["voxel per mm xyz"])
+    imageSubs = np.asarray(yamlConfig["image"]["subdivision xyz"])
+    angle_rad = yamlConfig["image"]["detector rotation"]
+    x_shift = yamlConfig["image"]["detector x-shift"]
+except yaml.YAMLError as err:
+    print("Error reading the configurations!", err)
+    exit(1)
 
-imageVxpms = np.array(yamlConfig["image"]["voxel per mm xyz"])
-
-imageVoxelIds = np.array([10, 20, 30])
-
-print(np.__version__)
+yMin = np.amin(systemGeom[:, 2])
+yMax = np.amax(systemGeom[:, 3])
+trans_x = imageDims[0] * 0.5
+trans_y = imageDims[1] * 0.5
+y_shift = 0.5 * (yMax - yMin)
+print(
+    "y-shift: ", y_shift, "x-shift", x_shift, "trans-x: ", trans_x, "trans_y", trans_y
+)
+imageCoord = np.array([0, 0, 0])
+print("Input: ", imageCoord)
+imageCoord = myfunc.coord_transform(
+    angle_rad, x_shift, y_shift, trans_x, trans_y, imageCoord
+)
+print("Transformed: ", imageCoord)

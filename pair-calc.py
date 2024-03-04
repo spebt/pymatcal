@@ -1,5 +1,6 @@
 import yaml
 import numpy as np
+import pyMatcal_routines as myfunc
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
@@ -14,16 +15,24 @@ with open(configFileName, "r") as stream:
 
 
 # Read in the geometry
-systemGeom = np.asarray(yamlConfig["detector geometry"])
-sensGeomIds = np.asarray(yamlConfig["detector"]["sensitive geometry indices"])
-sensGeom = systemGeom[sensGeomIds]
+try:
+    systemGeom = np.asarray(yamlConfig["detector geometry"])
+    sensGeomIds = np.asarray(yamlConfig["detector"]["sensitive geometry indices"])
+    sensGeom = systemGeom[sensGeomIds]
+    detSubs = np.asarray(yamlConfig["detector"]["crystal n subdivision xyz"])
+    # Calculate Image space N subdivision and size.
+    imageDims = np.asarray(yamlConfig["image"]["dimension xyz"])
+    imageVxpms = np.asarray(yamlConfig["image"]["voxel per mm xyz"])
+    imageSubs = np.asarray(yamlConfig["image"]["subdivision xyz"])
+    angle_rad = yamlConfig["detector"]["detector rotation"]
+    x_shift = yamlConfig["detector"]["detector x-shift"]
+    y_shift = 0.5 * yamlConfig["detector"]["detector y-dimension"]
+    trans_x = yamlConfig["image"]["x dimension"]
+    trans_y = yamlConfig["image"]["y dimension"]
 
-detSubs = np.asarray(yamlConfig["detector"]["crystal n subdivision xyz"])
-
-# Calculate Image space N subdivision and size.
-imageDims = np.asarray(yamlConfig["image"]["dimension xyz"])
-imageVxpms = np.asarray(yamlConfig["image"]["voxel per mm xyz"])
-imageSubs = np.asarray(yamlConfig["image"]["subdivision xyz"])
+except yaml.YAMLError as err:
+    print("Error reading the configurations!", err)
+    exit(1)
 imageNxyz = imageDims * imageVxpms
 
 # Task assignment
@@ -48,7 +57,9 @@ for taskId in np.arange(taskIdMin, taskIdMax):
     imageVoxelIds = np.array([imgVoxelIdx, imgVoxelIdy, imgVoxelIdz])
     imageVoxelCoords = imageVoxelIds / imageVxpms
     geom = sensGeom[int(detGeomId)]
-
+    imageCoord = myfunc.coord_transform(
+        angle_rad, x_shift, y_shift, trans_x, trans_y, imageVoxelCoords
+    )
     # Detector unit subdivision centroid coordinates
     xlin = np.linspace(geom[0], geom[1], detSubs[0] + 1)
     x_c = 0.5 * (xlin[1:] + xlin[:-1])
@@ -58,6 +69,6 @@ for taskId in np.arange(taskIdMin, taskIdMax):
     z_c = 0.5 * (zlin[1:] + zlin[:-1])
     centers = np.array(np.meshgrid(x_c, y_c, z_c))
     centers = centers.T.reshape(detSubs.prod(), 3)
-    
+
     # if rank == 0:
     #     print("taskId %2d: (Det: %2d, Img: %2d)" % (taskId, detGeomId, imgVoxlId))

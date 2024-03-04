@@ -33,7 +33,6 @@ image:
   dimension xyz: [7.0, 3.0, 1.0]
   voxel per mm xyz: [2.0, 2.0, 2.0]
   subdivision xyz: [1, 1, 1]
-  detector y-dimension: 9
   detector x-shift: 50
   detector rotation: 0
 
