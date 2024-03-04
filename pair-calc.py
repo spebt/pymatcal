@@ -24,15 +24,17 @@ try:
     imageDims = np.asarray(yamlConfig["image"]["dimension xyz"])
     imageVxpms = np.asarray(yamlConfig["image"]["voxel per mm xyz"])
     imageSubs = np.asarray(yamlConfig["image"]["subdivision xyz"])
-    angle_rad = yamlConfig["detector"]["detector rotation"]
-    x_shift = yamlConfig["detector"]["detector x-shift"]
-    y_shift = 0.5 * yamlConfig["detector"]["detector y-dimension"]
-    trans_x = yamlConfig["image"]["x dimension"]
-    trans_y = yamlConfig["image"]["y dimension"]
-
+    angle_rad = yamlConfig["image"]["detector rotation"]
+    x_shift = yamlConfig["image"]["detector x-shift"]
 except yaml.YAMLError as err:
     print("Error reading the configurations!", err)
     exit(1)
+
+yMin = np.amin(systemGeom[:, 2])
+yMax = np.amax(systemGeom[:, 3])
+trans_x = imageDims[0] * 0.5
+trans_y = imageDims[1] * 0.5
+y_shift = 0.5 * (yMax - yMin)
 imageNxyz = imageDims * imageVxpms
 
 # Task assignment
@@ -60,6 +62,7 @@ for taskId in np.arange(taskIdMin, taskIdMax):
     imageCoord = myfunc.coord_transform(
         angle_rad, x_shift, y_shift, trans_x, trans_y, imageVoxelCoords
     )
+    # print(imageCoord)
     # Detector unit subdivision centroid coordinates
     xlin = np.linspace(geom[0], geom[1], detSubs[0] + 1)
     x_c = 0.5 * (xlin[1:] + xlin[:-1])
