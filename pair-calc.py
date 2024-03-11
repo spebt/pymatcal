@@ -56,34 +56,34 @@ sysmatProc = np.zeros(nTasksPerProc)
 print("Rank: %5d" % rank, "Working on Tasks ID: ", taskIdMin, " to ", taskIdMax)
 
 
+imgSubLinespace_x = np.linspace(0, mmPerVoxel[0], imageSubs[0] + 1)
+imgSubLinespace_y = np.linspace(0, mmPerVoxel[1], imageSubs[1] + 1)
+imgSubLinespace_z = np.linspace(0, mmPerVoxel[2], imageSubs[2] + 1)
+imgSubCentroid = np.array(
+    np.meshgrid(
+        0.5 * (imgSubLinespace_x[1:] + imgSubLinespace_x[:-1]),
+        0.5 * (imgSubLinespace_y[1:] + imgSubLinespace_y[:-1]),
+        0.5 * (imgSubLinespace_z[1:] + imgSubLinespace_z[:-1]),
+    )
+).T.reshape(imageSubs.prod(), 3)
+
 for taskId in np.arange(taskIdMin, taskIdMax):
     taskId = int(taskId)
+    # local sensitive detector Id
     detGeomId = taskId // nImgVoxels
+    # local image voxel Id
     imgVoxelId = taskId % nImgVoxels
 
-    # Image voxel subdivision centroid coordinates
+    # local image voxel Id x,y,z
     imgVoxelIdx = imgVoxelId // (imageNxyz[1] * imageNxyz[2])
     imgVoxelIdyz = imgVoxelId % (imageNxyz[1] * imageNxyz[2])
     imgVoxelIdy = imgVoxelIdyz // imageNxyz[2]
     imgVoxelIdz = imgVoxelIdyz % imageNxyz[2]
 
-    imgSubLinespace_x = np.linspace(
-        imgVoxelIdx * mmPerVoxel[0], (imgVoxelIdx + 1) * mmPerVoxel[0], imageSubs[0] + 1
-    )
-    imgSubLinespace_y = np.linspace(
-        imgVoxelIdy * mmPerVoxel[1], (imgVoxelIdy + 1) * mmPerVoxel[1], imageSubs[1] + 1
-    )
-    imgSubLinespace_z = np.linspace(
-        imgVoxelIdz * mmPerVoxel[2], (imgVoxelIdz + 1) * mmPerVoxel[2], imageSubs[2] + 1
-    )
-    imgSubCentroid = np.array(
-        np.meshgrid(
-            0.5 * (imgSubLinespace_x[1:] + imgSubLinespace_x[:-1]),
-            0.5 * (imgSubLinespace_y[1:] + imgSubLinespace_y[:-1]),
-            0.5 * (imgSubLinespace_z[1:] + imgSubLinespace_z[:-1]),
-        )
-    ).T.reshape(imageSubs.prod(), 3)
-
+    # local image voxel coordinates in image reference frame, Cartesian coordinate system
+    voxelBaseCoords = mmPerVoxel * np.array([imgVoxelIdx, imgVoxelIdy, imgVoxelIdz])
+    # subdivisions coordinates    
+    localImgSubCentroids = voxelBaseCoords + imgSubCentroid
 
     # Detector voxel subdivision centroid coordinates
     geom = sensGeom[int(detGeomId)]
@@ -99,13 +99,13 @@ for taskId in np.arange(taskIdMin, taskIdMax):
         [xlin[1] - xlin[0], ylin[1] - ylin[0], zlin[1] - zlin[0]]
     )
 
-    imgSubCentroid = myfunc.coord_transform(
-        angle_rad, x_shift, y_shift, trans_x, trans_y, imgSubCentroid
+    localImgSubCentroids = myfunc.coord_transform(
+        angle_rad, x_shift, y_shift, trans_x, trans_y, localImgSubCentroids
     )
     detSubCentroid = np.array(np.meshgrid(x_c, y_c, z_c)).T.reshape(detSubs.prod(), 3)
     # print(detGeomId,imgVoxelId)
     sysmatProc[taskId % nTasksPerProc] = myfunc.PPFDForPair(
-        systemGeom, imgSubCentroid, detSubCentroid, detSubIncrement, geom[7]
+        systemGeom, localImgSubCentroids, detSubCentroid, detSubIncrement, geom[7]
     )
 
 
@@ -113,7 +113,7 @@ comm.Gather(sysmatProc, sysmat, root=0)
 comm.Barrier()
 if rank == 0:
     output = np.zeros(nTasks, dtype=float)
-    output = sysmat[0:nTasks]
+    output[:] = sysmat[0:nTasks]
     print(output.shape)
     # print("sysmat sum: ", np.sum(sysmat))
     print("\nSaving to file: %s" % yamlConfig["out npz filename"])
