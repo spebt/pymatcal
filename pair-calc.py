@@ -18,7 +18,7 @@ with open(configFileName, "r") as stream:
 try:
     systemGeom = np.asarray(yamlConfig["detector geometry"])
     sensGeomIds = np.asarray(yamlConfig["detector"]["sensitive geometry indices"])
-    sensGeom = systemGeom[sensGeomIds]
+    
     detSubs = np.asarray(yamlConfig["detector"]["crystal n subdivision xyz"])
     # Calculate Image space N subdivision and size.
     imageDims = np.asarray(yamlConfig["image"]["dimension xyz"])
@@ -29,6 +29,11 @@ try:
 except yaml.YAMLError as err:
     print("Error reading the configurations!", err)
     exit(1)
+
+sensGeom = []
+for index in sensGeomIds:
+    sensGeom.append(systemGeom[np.nonzero(systemGeom[:, 6] == index)].flatten())
+sensGeom=np.array(sensGeom)
 
 yMin = np.amin(systemGeom[:, 2])
 yMax = np.amax(systemGeom[:, 3])
