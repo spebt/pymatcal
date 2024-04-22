@@ -1,11 +1,13 @@
+from ctypes import *
 import numpy as np
 from scipy.signal import find_peaks
-from ctypes import *
 
-libray_cuboid_intersection = CDLL("libray_cuboid_intersection.so")
+libray_cuboid_intersection = CDLL("./libray_cuboid_intersection.so")
 get_intersection = libray_cuboid_intersection.get_intersection
-# define prototypes
+# C-type corresponding to numpy array
 ND_POINTER_1 = np.ctypeslib.ndpointer(dtype=np.float64, ndim=1, flags="C")
+
+# define prototypes
 get_intersection.argtypes = [ND_POINTER_1, ND_POINTER_1, ND_POINTER_1]
 get_intersection.restype = c_float
 
