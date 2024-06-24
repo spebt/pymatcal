@@ -1,0 +1,93 @@
+{
+    "title": "SPEBT system response matrix generation configuration schema",
+    "description": "SPEBT system response matrix generation configuration schema",
+    "type": "object",
+    "properties": {
+        "detector geometry": {
+            "description": "Detector geometry",
+            "type": "array",
+            "items": {
+                "type": "array"
+            },
+            "minItems": 1
+        },
+        "detector": {
+            "type": "object",
+            "properties": {
+                "N-subdivision xyz": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "sensitive geometry indices": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": [
+                "N-subdivision xyz",
+                "sensitive geometry indices"
+            ]
+        },
+        "image": {
+            "type": "object",
+            "properties": {
+                "N-voxels xyz": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "mm-per-voxel xyz": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                },
+                "N-subdivision xyz": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                }
+            },
+            "required": [
+                "N-voxels xyz",
+                "mm-per-voxel xyz",
+                "N-subdivision xyz",
+                "sensitive geometry indices"
+            ]
+        },
+        "detector-to-image": {
+            "type": "object",
+            "properties": {
+                "radial distance":{
+                    "type": "string",
+                    "pattern": "^[0-9]+[a-z]+"
+                },
+                "rotation":{
+                    "type": "number"
+                }
+            },
+            "required":
+        }
+    },
+    "required": [
+        "detector geometry",
+        "detector",
+        "image",
+        "detector-to-image"
+    ]
+}

@@ -14,19 +14,19 @@ detector geometry:
     [10, 13, 21.5, 24.5, -1, 1, 12, 0.48],
     [0, 15, 24.5, 25.0, -1, 1, 13, 10],
   ]
+
 detector:
-  crystal n subdivision xyz: [5, 5, 5]
+  N-subdivision xyz: [5, 5, 5]
   sensitive geometry indices:
     # [13, 14, 15, 16, 17, 18, 19, 20]
     [8]
   inner layer x up-lim: 8
 image:
-  # dimension xyz: [2, 2, 2]
   dimension xyz: [50, 50, 1]
   voxel per mm xyz: [1.0, 1.0, 1.0]
-  subdivision xyz: [2, 2, 2]
-  # subdivision xyz: [1, 1, 1]
+  N-subdivision xyz: [2, 2, 2]
   detector x-shift: 30
+
   detector rotation: 0
 
 Debug:
