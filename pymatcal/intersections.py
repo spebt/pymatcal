@@ -114,38 +114,37 @@ def get_AB_pairs(pAs, pBs):
 
 def get_intersections_2d(geoms, pAs, pBs):
     nb = len(pAs)
-    abpairs = np.concatenate(
-        (np.repeat(pAs, nb, axis=0), np.tile(pBs, (na, 1))), axis=1
-    )
-    o = 0.5 * (geoms[:, 0:-2:2] + geoms[:, 1:-2:2])
-    diagLength = np.linalg.norm(0.5 * geoms[:, 1:-2:2] - geoms[:, 0:-2:2], axis=1)
+    abpairs = get_AB_pairs(pAs, pBs)
+    for geom in geoms:
+        o = 0.5 * (geom[0:-2:2] + geom[1:-2:2])
+        diagLength = np.linalg.norm(geom[1:-2:2] - geom[0:-2:2])*0.5
+        print(np.cross(pAs[:,]-o,pBs[:,]-o).shape)
+    # # Loop through subdivisions
+    # for pA in pAs:
+    #     oa = pA - o
+    #     for pB in pBs:
+    #         ob = pB - o
+    #         ab_length = np.linalg.norm(pB - pA)
+    #         dist = np.linalg.norm(np.cross(oa, ob), axis=1) / ab_length
 
-    # Loop through subdivisions
-    for pA in pAs:
-        oa = pA - o
-        for pB in pBs:
-            ob = pB - o
-            ab_length = np.linalg.norm(pB - pA)
-            dist = np.linalg.norm(np.cross(oa, ob), axis=1) / ab_length
+    # # Line AB will not intersect with z planes in the 2D case
 
-    # Line AB will not intersect with z planes in the 2D case
+    # # Geometries on the gamma ray path
+    # geomsOnPath = geoms[np.where(dist < diagLength, True, False)]
+    # nGeoms = geomsOnPath.shape[0]
+    # if nGeoms > 0:
+    #     geomsOnPath = np.append(geomsOnPath, sensDetSubGeom).reshape(nGeoms + 1, 8)
+    # else:
+    #     geomsOnPath = np.array([sensDetSubGeom])
 
-    # Geometries on the gamma ray path
-    geomsOnPath = geoms[np.where(dist < diagLength, True, False)]
-    nGeoms = geomsOnPath.shape[0]
-    if nGeoms > 0:
-        geomsOnPath = np.append(geomsOnPath, sensDetSubGeom).reshape(nGeoms + 1, 8)
-    else:
-        geomsOnPath = np.array([sensDetSubGeom])
-
-    # Case 1: intersects on face x = x_0 or face x = x_1
-    # Note that A_x never equals B_x.
-    tx = (geoms[:, 0:2] - pA[0]) / (pB[0] - pA[0])
-    yx = tx * (pB[1] - pA[1]) + pA[1]
-    zx = tx * (pB[2] - pA[2]) + pA[2]
-    # Case 2: intersects on face y = y_0 or face y = y_1
-    # Note: we exclude the case when A_y equals B_y
-    if pB[1] - pA[1] != 0:
-        ty = (geomsOnPath[:, 2:4] - pA[1]) / (pB[1] - pA[1])
-        xy = ty * (pB[0] - pA[0]) + pA[0]
-        zy = ty * (pB[2] - pA[2]) + pA[2]
+    # # Case 1: intersects on face x = x_0 or face x = x_1
+    # # Note that A_x never equals B_x.
+    # tx = (geoms[:, 0:2] - pA[0]) / (pB[0] - pA[0])
+    # yx = tx * (pB[1] - pA[1]) + pA[1]
+    # zx = tx * (pB[2] - pA[2]) + pA[2]
+    # # Case 2: intersects on face y = y_0 or face y = y_1
+    # # Note: we exclude the case when A_y equals B_y
+    # if pB[1] - pA[1] != 0:
+    #     ty = (geomsOnPath[:, 2:4] - pA[1]) / (pB[1] - pA[1])
+    #     xy = ty * (pB[0] - pA[0]) + pA[0]
+    #     zy = ty * (pB[2] - pA[2]) + pA[2]

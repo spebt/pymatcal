@@ -25,14 +25,14 @@ detector:
       [0, 15, 24.5, 25.0, -0.5, 0.5, 0, 10]
     ]
 
-  N-subdivision xyz: [2, 2, 2]
+  N-subdivision xyz: [2, 2, 1]
   active geometry indices: [8]
 
 # Image space parameters
 image:
   N-voxels xyz: [500, 500, 1]
   mm-per-voxel xyz: [.1, .1, 1.0]
-  N-subdivision xyz: [2, 2, 2]
+  N-subdivision xyz: [4, 4, 1]
 
 # Image space to detector space relative positioning
 detector-to-image:
