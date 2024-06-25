@@ -3,17 +3,17 @@
     "description": "SPEBT system response matrix generation configuration schema",
     "type": "object",
     "properties": {
-        "detector geometry": {
-            "description": "Detector geometry",
-            "type": "array",
-            "items": {
-                "type": "array"
-            },
-            "minItems": 1
-        },
         "detector": {
             "type": "object",
             "properties": {
+                "detector geometry": {
+                    "description": "Detector geometry",
+                    "type": "array",
+                    "items": {
+                        "type": "array"
+                    },
+                    "minItems": 1
+                },
                 "N-subdivision xyz": {
                     "type": "array",
                     "items": {
@@ -22,7 +22,7 @@
                     "minItems": 3,
                     "maxItems": 3
                 },
-                "sensitive geometry indices": {
+                "active geometry indices": {
                     "type": "array",
                     "items": {
                         "type": "integer"
@@ -31,8 +31,9 @@
                 }
             },
             "required": [
+                "detector geometry",
                 "N-subdivision xyz",
-                "sensitive geometry indices"
+                "active geometry indices"
             ]
         },
         "image": {
@@ -66,26 +67,26 @@
             "required": [
                 "N-voxels xyz",
                 "mm-per-voxel xyz",
-                "N-subdivision xyz",
-                "sensitive geometry indices"
+                "N-subdivision xyz"
             ]
         },
         "detector-to-image": {
             "type": "object",
             "properties": {
-                "radial distance":{
+                "radial distance": {
                     "type": "string",
-                    "pattern": "^[0-9]+[a-z]+"
+                    "pattern": "^([0-9]+) ([a-z]+)"
                 },
-                "rotation":{
+                "rotation": {
                     "type": "number"
                 }
             },
-            "required":
+            "required": [
+                "radial distance"
+            ]
         }
     },
     "required": [
-        "detector geometry",
         "detector",
         "image",
         "detector-to-image"
