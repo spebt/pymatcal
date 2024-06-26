@@ -107,44 +107,50 @@ def findt(geomsOnPath, pA, pB):
 
 def get_AB_pairs(pAs, pBs):
     na, nb = (len(pAs), len(pBs))
-    return np.concatenate(
-        (np.repeat(pAs, nb, axis=0), np.tile(pBs, (na, 1))), axis=1
+    return np.concatenate((np.repeat(pAs, nb, axis=0), np.tile(pBs, (na, 1))), axis=1)
+
+
+def findt_2d(geom, abpairs):
+    # Case 1: intersects on face x = x_0 or face x = x_1
+    # Note that A_x never equals B_x.
+    tx0 = (abpairs[:, 0] - geom[0]) / (abpairs[:, 0] - abpairs[:, 3])
+    tx1 = (abpairs[:, 0] - geom[1]) / (abpairs[:, 0] - abpairs[:, 3])
+    yx0 = tx0 * (abpairs[:, 4] - abpairs[:, 1]) + abpairs[:, 1]
+    yx1 = tx1 * (abpairs[:, 4] - abpairs[:, 1]) + abpairs[:, 1]
+    condition_x0 = np.all(
+        np.array([yx0 > geom[2], yx0 < geom[3], tx0 > 0, tx0 < 1]), axis=0
     )
+    condition_x1 = np.all(
+        np.array([yx1 > geom[2], yx1 < geom[3], tx1 > 0, tx1 < 1]), axis=0
+    )
+    # Case 2: intersects on face y = y_0 or face y = y_1
+    # Note: we exclude the case when A_y equals B_y
+    abpairs_y = abpairs[abpairs[:, 1] != abpairs[:, 4]]
+    ty0 = (abpairs_y[:, 1] - geom[2]) / (abpairs_y[:, 1] - abpairs_y[:, 4])
+    ty1 = (abpairs_y[:, 1] - geom[3]) / (abpairs_y[:, 1] - abpairs_y[:, 4])
+    xy0 = ty0 * (abpairs_y[:, 3] - abpairs_y[:, 0]) + abpairs_y[:, 0]
+    xy1 = ty1 * (abpairs_y[:, 3] - abpairs_y[:, 0]) + abpairs_y[:, 0]
+    condition_y0 = np.all(
+        np.array([xy0 > geom[0], xy0 < geom[1], ty0 > 0, ty0 < 1]), axis=0
+    )
+    condition_y1 = np.all(
+        np.array([xy1 > geom[0], xy1 < geom[1], ty1 > 0, ty1 < 1]), axis=0
+    )
+    ts = np.array(
+        [
+            np.where(condition_x0, tx0, 0),
+            np.where(condition_x1, tx1, 0),
+            np.where(condition_y0, ty0, 0),
+            np.where(condition_y1, ty1, 0),
+        ]
+    )
+    return np.sort(ts, axis=0)[-2:]
 
 
-def get_intersections_2d(geoms, pAs, pBs):
-    nb = len(pAs)
-    abpairs = get_AB_pairs(pAs, pBs)
-    for geom in geoms:
-        o = 0.5 * (geom[0:-2:2] + geom[1:-2:2])
-        diagLength = np.linalg.norm(geom[1:-2:2] - geom[0:-2:2])*0.5
-        print(np.cross(pAs[:,]-o,pBs[:,]-o).shape)
-    # # Loop through subdivisions
-    # for pA in pAs:
-    #     oa = pA - o
-    #     for pB in pBs:
-    #         ob = pB - o
-    #         ab_length = np.linalg.norm(pB - pA)
-    #         dist = np.linalg.norm(np.cross(oa, ob), axis=1) / ab_length
+def get_intersections_2d(geoms, abpairs):
+    # abpairs = get_AB_pairs(pAs, pBs)
+    ab_vec = abpairs[:, 3:] - abpairs[:, 0:3]
+    ab_length = np.linalg.norm(ab_vec, axis=1)
+    ts = np.array([findt_2d(geom, abpairs).T for geom in geoms])
+    return (ab_length.T * np.abs(ts[0] - ts[1]))[np.all(ts != 0, axis=0)]
 
-    # # Line AB will not intersect with z planes in the 2D case
-
-    # # Geometries on the gamma ray path
-    # geomsOnPath = geoms[np.where(dist < diagLength, True, False)]
-    # nGeoms = geomsOnPath.shape[0]
-    # if nGeoms > 0:
-    #     geomsOnPath = np.append(geomsOnPath, sensDetSubGeom).reshape(nGeoms + 1, 8)
-    # else:
-    #     geomsOnPath = np.array([sensDetSubGeom])
-
-    # # Case 1: intersects on face x = x_0 or face x = x_1
-    # # Note that A_x never equals B_x.
-    # tx = (geoms[:, 0:2] - pA[0]) / (pB[0] - pA[0])
-    # yx = tx * (pB[1] - pA[1]) + pA[1]
-    # zx = tx * (pB[2] - pA[2]) + pA[2]
-    # # Case 2: intersects on face y = y_0 or face y = y_1
-    # # Note: we exclude the case when A_y equals B_y
-    # if pB[1] - pA[1] != 0:
-    #     ty = (geomsOnPath[:, 2:4] - pA[1]) / (pB[1] - pA[1])
-    #     xy = ty * (pB[0] - pA[0]) + pA[0]
-    #     zy = ty * (pB[2] - pA[2]) + pA[2]
