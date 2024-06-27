@@ -56,14 +56,20 @@ def get_config(confName: str):
             raise
     mydict = {}
     try:
+        geoms = np.asarray(
+            yamlConfig["detector"]["detector geometry"], dtype="d"
+        )
         mydict["det geoms"] = np.asarray(
             yamlConfig["detector"]["detector geometry"], dtype="d"
         )
         indices = np.asarray(
             yamlConfig["detector"]["active geometry indices"], dtype=np.int32
         )
-        mydict["active det"] = np.asarray(
-            mydict["det geoms"][mydict["det geoms"][:, 6] == indices], dtype='d')
+        active_det = []
+        for idx in indices:
+            active_det.append(geoms[geoms[:, 6] == idx][0])
+        mydict["active indices"] = indices
+        mydict["active det"] = np.array(active_det)
         mydict["det nsub"] = np.asarray(
             yamlConfig["detector"]["N-subdivision xyz"], dtype=np.int32)
 
@@ -87,3 +93,15 @@ def get_config(confName: str):
         print("Parse Error!\n%s" % err)
         raise
     return mydict
+
+
+def get_img_voxel_center(id: np.uint64, nvx: np.ndarray, mmpvx: np.ndarray):
+    # make sure the 1-D index given is valid
+    assert (id < np.prod(nvx)), 'Invalid voxel index!'
+    # index order, slowest to quickest changing: z -> y -> x
+    zid = id//(nvx[0]*nvx[1])
+    xyid = id % (nvx[0]*nvx[1])
+    yid = xyid // nvx[0]
+    xid = xyid % nvx[0]
+    # print('z -> y -> x:', '%d -> %d -> %d'%(zid, yid, xid))
+    return (np.array([xid, yid, zid])-np.append(nvx[:2], 0)*0.5)*mmpvx
