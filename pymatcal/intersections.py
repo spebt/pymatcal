@@ -66,8 +66,7 @@ def findt(geomsOnPath, pA, pB):
             True,
             False,
         )
-    conditions = np.swapaxes(
-        np.array([condition_x, condition_y, condition_z]), 0, 1)
+    conditions = np.swapaxes(np.array([condition_x, condition_y, condition_z]), 0, 1)
     tArr = np.swapaxes(np.array([tx, ty, tz]), 0, 1)
     dlmulist = []
     ab_length = np.linalg.norm(pB - pA)
@@ -84,28 +83,6 @@ def findt(geomsOnPath, pA, pB):
     except Exception as err:
         print("t: ", t, "\npA: ", pA, "\npB: ", pB, "\nGeom:", geomsOnPath[-1])
     return np.array(dlmulist)
-
-
-# def get_intersections(geoms,pAs,pBs):
-#     # Case 1: intersects on face x = x_0 or face x = x_1
-#     # Note that A_x never equals B_x.
-#     tx = (geoms[:, 0:2] - pA[0]) / (pB[0] - pA[0])
-#     yx = tx * (pB[1] - pA[1]) + pA[1]
-#     zx = tx * (pB[2] - pA[2]) + pA[2]
-#     # Case 2: intersects on face y = y_0 or face y = y_1
-#     # Note: we exclude the case when A_y equals B_y
-#     if pB[1] - pA[1] != 0:
-#         ty = (geomsOnPath[:, 2:4] - pA[1]) / (pB[1] - pA[1])
-#         xy = ty * (pB[0] - pA[0]) + pA[0]
-#         zy = ty * (pB[2] - pA[2]) + pA[2]
-
-
-#     # Case 3: intersects on face z = z_0 or face z = z_1
-#     # Note: we exclude the case when A_z equals B_z
-#     if pB[2] - pA[2] != 0:
-#         tz = (geomsOnPath[:, 4:6] - pA[2]) / (pB[2] - pA[2])
-#         xz = tz * (pB[0] - pA[0]) + pA[0]
-#         yz = tz * (pB[1] - pA[1]) + pA[1]
 
 
 def get_AB_pairs(pAs, pBs):
@@ -139,43 +116,49 @@ def findt_2d(geom, abpairs):
     condition_y1 = np.all(
         np.array([xy1 > geom[0], xy1 < geom[1], ty1 > 0, ty1 < 1]), axis=0
     )
-    t_sorted = np.sort(np.array(
-        [
-            np.where(condition_x0, tx0, 0),
-            np.where(condition_x1, tx1, 0),
-            np.where(condition_y0, ty0, 0),
-            np.where(condition_y1, ty1, 0),
-        ]
-    ).T, axis=1)
+    t_sorted = np.sort(
+        np.array(
+            [
+                np.where(condition_x0, tx0, 0),
+                np.where(condition_x1, tx1, 0),
+                np.where(condition_y0, ty0, 0),
+                np.where(condition_y1, ty1, 0),
+            ]
+        ).T,
+        axis=1,
+    )
     # To deal with duplicated intersections and single intersections
     t_count = np.count_nonzero(t_sorted, axis=1)
     t_list = np.append(t_sorted, np.ones((abpairs.shape[0], 1)), axis=1)
-    mask = np.array([[True, True, False, False, False], [False, False, False, True, True], [False, False, True, True, False], [
-        False, True, False, True, False], [True, False, False, True, False]])
+    mask = np.array(
+        [
+            [True, True, False, False, False],
+            [False, False, False, True, True],
+            [False, False, True, True, False],
+            [False, True, False, True, False],
+            [True, False, False, True, False],
+        ]
+    )
     t_mask = mask[t_count]
     return t_list[t_mask].reshape((abpairs.shape[0], 2))
 
 
-def get_intersects_2d(geoms, abpairs):
+def get_intersects_2d(geoms: np.ndarray, abpairs: np.ndarray):
     # abpairs = get_AB_pairs(pAs, pBs)
     ab_vec = abpairs[:, 3:] - abpairs[:, 0:3]
     ts = np.array([findt_2d(geom, abpairs) for geom in geoms])
-    print(ts.shape)
     intersects = np.array(
         [
-            [ab_vec.T * ts[iGeom, idx, :] +
-                abpairs[:, 0:3].T for idx in [0, 1]]
+            [ab_vec.T * ts[iGeom, :, idx] + abpairs[:, 0:3].T for idx in [0, 1]]
             for iGeom in range(0, geoms.shape[0])
         ]
     )
-    indices = np.all(ts != 0, axis=1)
-    intersects = np.swapaxes(intersects, 3, 1)
-    return intersects[indices]
+    return np.swapaxes(intersects, 3, 1)[np.any(ts != 0, axis=2)]
 
 
-def get_intersections_2d(geoms, abpairs):
+def get_intersections_2d(geoms: np.ndarray, abpairs: np.ndarray):
     # abpairs = get_AB_pairs(pAs, pBs)
     ab_vec = abpairs[:, 3:] - abpairs[:, 0:3]
     ab_length = np.linalg.norm(ab_vec, axis=1)
     ts = np.array([findt_2d(geom, abpairs) for geom in geoms])
-    return (ab_length.T * np.abs(ts[0] - ts[1]))[np.all(ts != 0, axis=0)]
+    return ab_length.T * (ts[:, :, 1] - ts[:, :, 0])
