@@ -162,3 +162,6 @@ def get_intersections_2d(geoms: np.ndarray, abpairs: np.ndarray):
     ab_length = np.linalg.norm(ab_vec, axis=1)
     ts = np.array([findt_2d(geom, abpairs) for geom in geoms])
     return ab_length.T * (ts[:, :, 1] - ts[:, :, 0])
+
+def append_subdivs_block(geom, nsubs):
+    
