@@ -66,7 +66,8 @@ def findt(geomsOnPath, pA, pB):
             True,
             False,
         )
-    conditions = np.swapaxes(np.array([condition_x, condition_y, condition_z]), 0, 1)
+    conditions = np.swapaxes(
+        np.array([condition_x, condition_y, condition_z]), 0, 1)
     tArr = np.swapaxes(np.array([tx, ty, tz]), 0, 1)
     dlmulist = []
     ab_length = np.linalg.norm(pB - pA)
@@ -161,7 +162,5 @@ def get_intersections_2d(geoms: np.ndarray, abpairs: np.ndarray):
     ab_vec = abpairs[:, 3:] - abpairs[:, 0:3]
     ab_length = np.linalg.norm(ab_vec, axis=1)
     ts = np.array([findt_2d(geom, abpairs) for geom in geoms])
-    return ab_length.T * (ts[:, :, 1] - ts[:, :, 0])
-
-def append_subdivs_block(geom, nsubs):
-    
+    return {'intersections': ab_length.T * (ts[:, :, 1] - ts[:, :, 0]),
+            'ts': ts}

@@ -65,11 +65,11 @@ def get_config(confName: str):
         indices = np.asarray(
             yamlConfig["detector"]["active geometry indices"], dtype=np.int32
         )
-        active_det = []
+        active_dets = []
         for idx in indices:
-            active_det.append(geoms[geoms[:, 6] == idx][0])
+            active_dets.append(geoms[geoms[:, 6] == idx][0])
         mydict["active indices"] = indices
-        mydict["active det"] = np.array(active_det)
+        mydict["active dets"] = np.array(active_dets)
         mydict["det nsub"] = np.asarray(
             yamlConfig["detector"]["N-subdivision xyz"], dtype=np.int32)
 
