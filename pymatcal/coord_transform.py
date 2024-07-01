@@ -3,7 +3,6 @@
 # The coordinate frame rotates counter-clock-wise by angle_rad
 import math
 import numpy as np
-from typing import NewType
 
 
 def coord_transform_v2(angle_rad, x_shift, y_shift, input):
