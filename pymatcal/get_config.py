@@ -105,3 +105,12 @@ def get_img_voxel_center(id: np.uint64, nvx: np.ndarray, mmpvx: np.ndarray):
     xid = xyid % nvx[0]
     # print('z -> y -> x:', '%d -> %d -> %d'%(zid, yid, xid))
     return (np.array([xid, yid, zid])-np.append(nvx[:2], 0)*0.5)*mmpvx
+
+
+def get_procIds(ntasks: np.uint64, nprocs: np.uint64) -> np.ndarray:
+    nPerProc_add = np.zeros(nprocs)
+    nPerProc_add[0:ntasks % nprocs] = np.ones(ntasks % nprocs)
+    idxsPerProc = np.cumsum(
+        np.insert(np.ones(nprocs)*(ntasks // nprocs)+nPerProc_add, 0, 0), dtype=np.uint32)
+    idxsPerProc = np.vstack((idxsPerProc[:-1], idxsPerProc[1:]))
+    return idxsPerProc

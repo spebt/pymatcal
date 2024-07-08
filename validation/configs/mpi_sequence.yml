@@ -19,8 +19,8 @@ detector:
       [11, 21, 21, 27, -.5, 0.5, 5, 0.48],
     ]
 
-  N-subdivision xyz: [6, 6, 1]
-  active geometry indices: [2,5]
+  N-subdivision xyz: [3, 3, 1]
+  active geometry indices: [5]
 
 # Image space parameters
 image:
