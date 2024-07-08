@@ -15,28 +15,27 @@ def __parse_dist(str: str):
     value = 0
     ngroups = len(result.groups())
     # print(ngroups)
-    match ngroups:
-        case 2:
+    if ngroups == 2:
+        value = float(result.group(1))
+        unit = result.group(2)
+    elif ngroups == 3:
+        if result.group(2) is None:
             value = float(result.group(1))
-            unit = result.group(2)
-        case 3:
-            if result.group(2) is None:
-                value = float(result.group(1))
-                unit = result.group(3)
-            else:
-                value = float(result.group(1)+result.group(2))
-                unit = result.group(3)
-        case _:
-            raise SyntaxError("Invalid detector to FOV distance!!")
-    match unit:
-        case 'mm':
-            return value
-        case 'cm':
-            return value*10
-        case 'm':
-            return value*1000
-        case _:
-            raise SyntaxError("Invalid detector to FOV distance unit!!")
+            unit = result.group(3)
+        else:
+            value = float(result.group(1)+result.group(2))
+            unit = result.group(3)
+    else:
+        raise SyntaxError("Invalid detector to FOV distance!!")
+
+    if unit == 'mm':
+        return value
+    elif unit == 'cm':
+        return value*10
+    elif unit == 'm':
+        return value*1000
+    else:
+        raise SyntaxError("Invalid detector to FOV distance unit!!")
 
 
 def get_config(confName: str):
