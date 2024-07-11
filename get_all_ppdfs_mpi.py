@@ -7,7 +7,7 @@ import re
 
 
 configFname = sys.argv[1]
-config = pymatcal.get_config('configFname')
+config = pymatcal.get_config(configFname)
 outFname = re.match('^(.+).yml',configFname).group(1)+'.hdf5'
 NA = np.prod(config['img nvx'])
 NB = config['active dets'].shape[0]
