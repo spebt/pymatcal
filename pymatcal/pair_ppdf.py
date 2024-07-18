@@ -1,12 +1,11 @@
 import numpy as np
-# from pymatcal import *
-from pymatcal.get_config import *
-from pymatcal.intersections import *
-from pymatcal.coord_transform import *
-from pymatcal.solid_angle import *
-from pymatcal.subdivs import *
-from pymatcal.coord_transform import *
-
+from .get_config import *
+from .intersections import *
+from .coord_transform import *
+from .solid_angle import *
+from .subdivs import *
+from .coord_transform import *
+from ._utils import set_module
 
 def get_pair_ppdf(ida: np.uint64, idb: np.uint64, img_subdivs: dict, config: dict) -> np.float64:
     det_dimy = np.max(config['det geoms'][:, 3]) - \

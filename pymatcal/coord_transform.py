@@ -3,9 +3,9 @@
 # The coordinate frame rotates counter-clock-wise by angle_rad
 import math
 import numpy as np
+from ._utils import set_module
 
-
-def coord_transform_v2(angle_rad, x_shift, y_shift, input):
+def coord_transformansform_v2(angle_rad, x_shift, y_shift, input):
     # Rotational
     # Angle in radians
     out = np.zeros((input.shape[0], 3))
@@ -18,8 +18,16 @@ def coord_transform_v2(angle_rad, x_shift, y_shift, input):
     out[:, 1] = out[:, 1] + y_shift
     return out
 
-
+@set_module('pymatcal')
 def get_mtransform(angle_deg: float, tx, ty) -> np.ndarray:
+    """
+    Get the transformation matrix for a given angle in degrees and translation values.
+
+    :param angle_deg: The angle in degrees.
+    :param tx: The translation value along the x-axis.
+    :param ty: The translation value along the y-axis.
+    :return: The transformation matrix as a numpy array.
+    """
     # convert degrees to radians
     angle_rad = math.radians(angle_deg)
     return (
@@ -36,6 +44,17 @@ def get_mtransform(angle_deg: float, tx, ty) -> np.ndarray:
 
 # M(x+M_inv*a)=Mx+a
 
+@set_module('pymatcal')
+def coord_transformansform(m: tuple[np.ndarray], input: np.ndarray):
+    """
+    Apply coordinate transformation to the input array.
 
-def coord_transform(m: tuple[np.ndarray], input: np.ndarray):
+    Parameters:
+    m (tuple[np.ndarray]): A tuple containing two numpy arrays representing the transformation matrix.
+    input (np.ndarray): The input array to be transformed.
+
+    Returns:
+    np.ndarray: The transformed array.
+
+    """
     return np.matmul(input, m[0]) + m[1]

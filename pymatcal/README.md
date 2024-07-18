@@ -60,8 +60,6 @@ Simply do:
 python readSysmat.py
 ```
 The script will read `configs/config.yml` and find the produced matrix. If the matrix file `.npz` is moved, you will need to modify the `readSysmat.py`
-```
+
 python -m venv venv
-source venv/bin/activate
 python -m pip install -e pymatcal
-```
