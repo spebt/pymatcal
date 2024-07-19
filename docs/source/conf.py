@@ -20,8 +20,13 @@ sys.path.insert(0, os.path.abspath('../../pymatcal'))
 sys.path.insert(0, os.path.abspath('.'))
 # print(os.path)
 
-extensions = ['sphinx.ext.autodoc', 'myst_parser']
+extensions = ['sphinx.ext.intersphinx','sphinx.ext.autodoc', 'sphinx.ext.mathjax', 'myst_parser']
 # autosummary_generate = True
+# Add mappings
+intersphinx_mapping = {
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'python': ('https://docs.python.org/3', None),
+}
 templates_path = ['_templates']
 exclude_patterns = []
 

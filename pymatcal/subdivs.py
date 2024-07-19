@@ -1,6 +1,8 @@
 import numpy as np
 from .coord_transform import *
 from ._utils import set_module
+
+
 @set_module('pymatcal')
 def get_img_subdivs(mmpvx, nsubs):
     """
@@ -77,15 +79,15 @@ def get_centroids(geoms: np.ndarray) -> np.ndarray:
 @set_module('pymatcal')
 def append_subdivs(geoms: np.ndarray, focs: np.ndarray, subdiv_geoms: np.ndarray):
     """
-    Append subdivisions to the existing subdivisions.
+    Append subdivisions to the existing array of geometries.
 
     :param geoms: The existing subdivisions.
     :type geoms: ndarray
-    :param focs: The focal points of the detector.
+    :param focs: The detector units geometries in focus.
     :type focs: ndarray
-    :param subdiv_geoms: The subdivisions to be appended.
+    :param subdiv_geoms: The subdivisions geometries to be appended.
     :type subdiv_geoms: ndarray
-    :return: The updated subdivisions.
+    :return: The updated array of geometries.
     :rtype: ndarray
     """
     blocks = geoms[geoms[:, 6] != focs[6]]
