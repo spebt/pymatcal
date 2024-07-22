@@ -9,10 +9,12 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     # Standard drop-in approach that should work for most people.
+    # Install python dependencies.
     - uses: ammaraskar/sphinx-action@master
       with:
+        pre-build-command: "pip install numpy myst_parser jsonschema"
         docs-folder: "docs/"
-
+    
     # Publish built docs to gh-pages branch.
     # ===============================
     - name: Commit documentation changes
