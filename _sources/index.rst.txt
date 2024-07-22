@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-pysysmat documentation
+pymatcal documentation
 ======================
 .. Add your content using ``reStructuredText`` syntax. See the reStructuredText
    https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
@@ -13,6 +13,7 @@ pysysmat documentation
    :maxdepth: 2
    :caption: Contents:
 
+   basics.md
    pymatcal_routines.md
 
 

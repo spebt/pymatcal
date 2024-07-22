@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Introduction &#8212; pysysmat 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API reference" href="pymatcal_routines.html" />
+    <link rel="prev" title="pymatcal documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">pymatcal</span></code> is a Python implementation of the ray-tracing-based analytical calculation of system response matrix of a single photon emission tomography system. Key features of the project are:</p>
+<ul class="simple">
+<li><p>Almost 100% Numpy-based, transition to a CUDA capable system should be easy with Python packages like <a class="reference external" href="https://cupy.dev/">CuPy</a></p></li>
+<li><p>It is written in an MPI-ready style. With the help of <a class="reference external" href="https://mpi4py.readthedocs.io/en/stable/">mpi4py</a>, we can run the calculation in parallel with a short Python script.</p></li>
+<li><p>System matrix I/O is handled with <a class="reference external" href="https://docs.h5py.org/en/stable/">h5py</a> package. The package provides a convenient API for writing data in parallel with MPI.</p></li>
+</ul>
+<section id="dependency">
+<h2>Dependency:<a class="headerlink" href="#dependency" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>Python 3.10 and above</p></li>
+<li><p>Python packages:</p>
+<ul>
+<li><p><a class="reference external" href="https://numpy.org/install/">Numpy</a></p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/h5py/">h5py</a></p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/PyYAML/">pyyaml</a></p></li>
+<li><p><a class="reference external" href="https://python-jsonschema.readthedocs.io/en/stable/">jsonschema</a></p></li>
+</ul>
+</li>
+</ul>
+<p>To run with MPI, an OpenMPI installation on the system is needed. To run in MPI paralellization with Python, we ca use <a class="reference external" href="https://mpi4py.readthedocs.io/en/stable/">mpi4py</a></p>
+</section>
+<section id="example-python-script-to-run-in-mpi">
+<h2>Example Python script to run in MPI<a class="headerlink" href="#example-python-script-to-run-in-mpi" title="Link to this heading">¶</a></h2>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">pymatcal</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+
+<span class="n">configFname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">pymatcal</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">configFname</span><span class="p">)</span>
+
+<span class="n">outFname</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^(.+).yml&#39;</span><span class="p">,</span><span class="n">configFname</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.hdf5&#39;</span>
+
+<span class="n">NA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;img nvx&#39;</span><span class="p">])</span>
+<span class="n">NB</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;active dets&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">idmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">((</span><span class="n">NA</span><span class="p">,</span> <span class="n">NB</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">NA</span><span class="o">*</span><span class="n">NB</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+<span class="n">img_subdivs</span> <span class="o">=</span> <span class="n">pymatcal</span><span class="o">.</span><span class="n">get_img_subdivs</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;mmpvx&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;img nsub&#39;</span><span class="p">])</span>
+
+
+<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+<span class="n">rank</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
+<span class="n">nprocs</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
+
+<span class="n">ntasks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;img nvx&#39;</span><span class="p">])</span><span class="o">*</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;active dets&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">procTaskIds</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Configurations:&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:30s}{:,}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;N total tasks:&#39;</span><span class="p">,</span> <span class="n">ntasks</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:30s}{:,}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;N Process:&#39;</span><span class="p">,</span> <span class="n">nprocs</span><span class="p">))</span>
+    <span class="n">procTaskIds</span> <span class="o">=</span> <span class="n">pymatcal</span><span class="o">.</span><span class="n">get_procIds</span><span class="p">(</span><span class="n">ntasks</span><span class="p">,</span> <span class="n">nprocs</span><span class="p">)</span>
+
+<span class="n">procTaskIds_recv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+
+<span class="n">comm</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">procTaskIds</span><span class="p">,</span> <span class="n">procTaskIds_recv</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">outFname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;mpio&#39;</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">)</span>
+
+<span class="n">dset</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">NB</span><span class="p">,</span><span class="n">NA</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">procTaskIds_recv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">procTaskIds_recv</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+    <span class="n">dset</span><span class="p">[</span><span class="n">idmap</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">idmap</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pymatcal</span><span class="o">.</span><span class="n">get_pair_ppdf</span><span class="p">(</span><span class="n">idmap</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">idmap</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">img_subdivs</span><span class="p">,</span><span class="n">config</span><span class="p">)</span>
+
+<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pysysmat</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dependency">Dependency:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-python-script-to-run-in-mpi">Example Python script to run in MPI</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pymatcal_routines.html">API reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">pymatcal documentation</a></li>
+      <li>Next: <a href="pymatcal_routines.html" title="next chapter">API reference</a></li>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Fang Han.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/basics.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
