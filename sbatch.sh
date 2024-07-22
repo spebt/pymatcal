@@ -14,9 +14,8 @@
 module load intel
 module load hdf5/1.14.1
 # install mpi4py module 
-pip --user install mpi4py
-HDF5_MPI="ON" CC=mpicc pip install --user --no-c
-ache-dir --no-binary=h5py h5py
+pip install --user mpi4py
+HDF5_MPI="ON" CC=mpicc pip install --user --no-cache-dir --no-binary=h5py h5py
 # setup for MPI
 export I_MPI_DEBUG=4
 export I_MPI_PMI_LIBRARY=/opt/software/slurm/lib64/libpmi.so
