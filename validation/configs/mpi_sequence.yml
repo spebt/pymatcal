@@ -1,0 +1,43 @@
+# Just a test config file
+
+# Detector space parameters
+detector:
+  detector geometry:
+    # detector geometry in millimeter.
+    # Defined in cuboids with x_0, x_1, y_0, y_1, z_0, z_1
+    # parameter 0 to 1: radial coordinates, x_0, x_1
+    # parameter 2 to 3: tangential coordiantes, y_0, y_1
+    # parameter 4 to 5: axial coordiantes, z_0, z_1
+    # parameter 6: cuboid type identifier. 
+    # 0 is non-detector, 1 and greater numbers are sequential indices for detector units
+    # parameter 7: cuboid attenuation coefficient
+    [
+      [0, 10, 1, 7, -.5, 0.5, 1, 0.48],
+      [0, 10, 9, 15, -.5, 0.5, 2, 0.48],
+      [0, 10, 17, 23, -.5, 0.5, 3, 0.48],
+      [0, 10, 25, 31, -.5, 0.5, 4, 0.48],
+      [11, 21, 21, 27, -.5, 0.5, 5, 0.48],
+    ]
+
+  N-subdivision xyz: [3, 3, 1]
+  active geometry indices: [5]
+
+# Image space parameters
+image:
+  N-voxels xyz: [100, 100, 1]
+  mm-per-voxel xyz: [1, 1, 1.0]
+  N-subdivision xyz: [2, 2, 1]
+
+# Image space to detector space relative positioning
+detector-to-image:
+  # detector front edge to FOV center distance in radial direction
+  # acceptable units are mm, cm, m
+  radial distance: 120.0 mm
+  # rotation of the detector relative to the FOV in degrees
+  rotation: 0
+
+# debug:
+#   Point A: [-40, -12.5, 0.5]
+#   Point B: [11.5, 13.5, 0.5]
+
+out npz filename: mpi-test.npz

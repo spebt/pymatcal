@@ -11,39 +11,31 @@ detector:
     # parameter 6: cuboid type identifier
     # parameter 7: cuboid attenuation coefficient
     [
-      [10, 13, 0.5, 3.5, -0.5, 0.5, 1, 0.48],
-      [10, 13, 3.5, 6.5, -0.5, 0.5, 2, 0.48],
-      [10, 13, 6.5, 9.5, -0.5, 0.5, 3, 0.48],
-      [10, 13, 9.5, 12.5, -0.5, 0.5, 4, 0.48],
-      [10, 13, 12.5, 15.5, -0.5, 0.5, 5, 0.48],
-      [10, 13, 15.5, 18.5, -0.5, 0.5, 6, 0.48],
-      [10, 13, 18.5, 21.5, -0.5, 0.5, 7, 0.48],
-      [10, 13, 21.5, 24.5, -0.5, 0.5, 8, 0.48],
-      [0, 1, 0.5, 10.75, -0.5, 0.5, 0, 10],
-      [0, 1, 11.25, 24.5, -0.5, 0.5, 0, 10],
-      [0, 15, 0.0, 0.5, -0.5, 0.5, 0, 10],
-      [0, 15, 24.5, 25.0, -0.5, 0.5, 0, 10]
+      [0, 10, 1, 7, -.5, 0.5, 1, 0.48],
+      [0, 10, 9, 15, -.5, 0.5, 2, 0.48],
+      [0, 10, 17, 23, -.5, 0.5, 3, 0.48],
+      [11, 21, 12, 18, -.5, 0.5, 4, 0.48],
     ]
 
   N-subdivision xyz: [2, 2, 1]
-  active geometry indices: [8]
+  active geometry indices: [4]
 
 # Image space parameters
 image:
   N-voxels xyz: [500, 500, 1]
-  mm-per-voxel xyz: [.1, .1, 1.0]
+  mm-per-voxel xyz: [40, 40, 1.0]
   N-subdivision xyz: [4, 4, 1]
 
 # Image space to detector space relative positioning
 detector-to-image:
   # detector front edge to FOV center distance in radial direction
   # acceptable units are mm, cm, m
-  radial distance: 50 mm
+  radial distance: 60.0 mm
   # rotation of the detector relative to the FOV in degrees
   # rotation: 0
 
-Debug:
-  Point A: [-40, -12.5, 0.5]
-  Point B: [11.5, 13.5, 0.5]
+# debug:
+#   Point A: [-40, -12.5, 0.5]
+#   Point B: [11.5, 13.5, 0.5]
 
 out npz filename: mpi-test.npz
