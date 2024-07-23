@@ -10,4 +10,3 @@
     - [h5py](https://pypi.org/project/h5py/)
     - [pyyaml](https://pypi.org/project/PyYAML/)
     - [jsonschema](https://python-jsonschema.readthedocs.io/en/stable/)
-```Python
