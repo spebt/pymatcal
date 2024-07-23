@@ -42,69 +42,71 @@
 </ul>
 <section id="dependency">
 <h2>Dependency:<a class="headerlink" href="#dependency" title="Link to this heading">¶</a></h2>
+<section id="must-have">
+<h3>Must have:<a class="headerlink" href="#must-have" title="Link to this heading">¶</a></h3>
+<section id="python-3-9-6-and-above">
+<h4>Python 3.9.6 and above<a class="headerlink" href="#python-3-9-6-and-above" title="Link to this heading">¶</a></h4>
+</section>
+<section id="python-packages">
+<h4>Python packages:<a class="headerlink" href="#python-packages" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p>Python 3.10 and above</p></li>
-<li><p>Python packages:</p>
-<ul>
 <li><p><a class="reference external" href="https://numpy.org/install/">Numpy</a></p></li>
-<li><p><a class="reference external" href="https://pypi.org/project/h5py/">h5py</a></p></li>
 <li><p><a class="reference external" href="https://pypi.org/project/PyYAML/">pyyaml</a></p></li>
 <li><p><a class="reference external" href="https://python-jsonschema.readthedocs.io/en/stable/">jsonschema</a></p></li>
 </ul>
-</li>
-</ul>
-<p>To run with MPI, an OpenMPI installation on the system is needed. To run in MPI paralellization with Python, we ca use <a class="reference external" href="https://mpi4py.readthedocs.io/en/stable/">mpi4py</a></p>
 </section>
-<section id="example-python-script-to-run-in-mpi">
-<h2>Example Python script to run in MPI<a class="headerlink" href="#example-python-script-to-run-in-mpi" title="Link to this heading">¶</a></h2>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">pymatcal</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">h5py</span>
-<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
-<span class="kn">import</span> <span class="nn">re</span>
-
-
-<span class="n">configFname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">config</span> <span class="o">=</span> <span class="n">pymatcal</span><span class="o">.</span><span class="n">get_config</span><span class="p">(</span><span class="n">configFname</span><span class="p">)</span>
-
-<span class="n">outFname</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s1">&#39;^(.+).yml&#39;</span><span class="p">,</span><span class="n">configFname</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.hdf5&#39;</span>
-
-<span class="n">NA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;img nvx&#39;</span><span class="p">])</span>
-<span class="n">NB</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;active dets&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="n">idmap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">((</span><span class="n">NA</span><span class="p">,</span> <span class="n">NB</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">NA</span><span class="o">*</span><span class="n">NB</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-
-<span class="n">img_subdivs</span> <span class="o">=</span> <span class="n">pymatcal</span><span class="o">.</span><span class="n">get_img_subdivs</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;mmpvx&#39;</span><span class="p">],</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;img nsub&#39;</span><span class="p">])</span>
-
-
-<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
-<span class="n">rank</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
-<span class="n">nprocs</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
-
-<span class="n">ntasks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;img nvx&#39;</span><span class="p">])</span><span class="o">*</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;active dets&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">procTaskIds</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Configurations:&#39;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:30s}{:,}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;N total tasks:&#39;</span><span class="p">,</span> <span class="n">ntasks</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{:30s}{:,}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;N Process:&#39;</span><span class="p">,</span> <span class="n">nprocs</span><span class="p">))</span>
-    <span class="n">procTaskIds</span> <span class="o">=</span> <span class="n">pymatcal</span><span class="o">.</span><span class="n">get_procIds</span><span class="p">(</span><span class="n">ntasks</span><span class="p">,</span> <span class="n">nprocs</span><span class="p">)</span>
-
-<span class="n">procTaskIds_recv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
-
-<span class="n">comm</span><span class="o">.</span><span class="n">Scatter</span><span class="p">(</span><span class="n">procTaskIds</span><span class="p">,</span> <span class="n">procTaskIds_recv</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-<span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">outFname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;mpio&#39;</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="p">)</span>
-
-<span class="n">dset</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">NB</span><span class="p">,</span><span class="n">NA</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">procTaskIds_recv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">procTaskIds_recv</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
-    <span class="n">dset</span><span class="p">[</span><span class="n">idmap</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">idmap</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pymatcal</span><span class="o">.</span><span class="n">get_pair_ppdf</span><span class="p">(</span><span class="n">idmap</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">idmap</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span><span class="n">img_subdivs</span><span class="p">,</span><span class="n">config</span><span class="p">)</span>
-
-<span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</section>
+<section id="run-in-parallel-on-the-cluster">
+<h3>Run in parallel on the cluster<a class="headerlink" href="#run-in-parallel-on-the-cluster" title="Link to this heading">¶</a></h3>
+<section id="mpi">
+<h4>MPI<a class="headerlink" href="#mpi" title="Link to this heading">¶</a></h4>
+<p>To run with MPI, an MPI installation on the system is needed. We need to either use the Intel MPI or OpenMPI or even both.</p>
+<p>For now, we use Inter MPI with</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>module<span class="w"> </span>load<span class="w"> </span>intel
 </pre></div>
 </div>
+<p>or simply</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>ml<span class="w"> </span>intel
+</pre></div>
+</div>
+<p>To run in MPI paralellization with Python, we ca use</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://mpi4py.readthedocs.io/en/stable/">mpi4py</a></p></li>
+</ul>
+<p>mpi4py can be installed with pip. On the cluster, either use</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>mpi4py
+</pre></div>
+</div>
+<p>or with a virtualenv</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate
+pip<span class="w"> </span>install<span class="w"> </span>mpi4py
+</pre></div>
+</div>
+<p>mpi4py installation can be verify by</p>
+<div class="highlight-Bash notranslate"><div class="highlight"><pre><span></span>mpiexec<span class="w"> </span>-n<span class="w"> </span><span class="m">4</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>mpi4py.bench<span class="w"> </span>helloworld
+</pre></div>
+</div>
+</section>
+<section id="hdf5-python-binding">
+<h4>HDF5 Python binding<a class="headerlink" href="#hdf5-python-binding" title="Link to this heading">¶</a></h4>
+<p>We use h5py mainly for its parallel writing with MPI. It provides a simple API for this purpose.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pypi.org/project/h5py/">h5py</a></p></li>
+</ul>
+<section id="building-paralell">
+<h5>Building Paralell<a class="headerlink" href="#building-paralell" title="Link to this heading">¶</a></h5>
+</section>
+</section>
+</section>
+</section>
+<section id="example-result">
+<h2>Example result<a class="headerlink" href="#example-result" title="Link to this heading">¶</a></h2>
+<section id="single-pinhole-1-detector-unit">
+<h3>Single pinhole, 1 detector unit<a class="headerlink" href="#single-pinhole-1-detector-unit" title="Link to this heading">¶</a></h3>
+<a class="reference internal image-reference" href="_images/test_20240722_182815_data_det_000.png"><img alt="singe-pinhole-1-detetor-unit" class="align-center" src="_images/test_20240722_182815_data_det_000.png" style="width: 1024px;" />
+</a>
+</section>
 </section>
 </section>
 
@@ -129,7 +131,7 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dependency">Dependency:</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#example-python-script-to-run-in-mpi">Example Python script to run in MPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-result">Example result</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="pymatcal_routines.html">API reference</a></li>
