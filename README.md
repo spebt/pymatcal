@@ -1,67 +1,33 @@
-# pyMatcal
 
-Python implementation of the system response matrix analytical calculation
+# Introduction
 
-## `pair-calc.py`
+**pymatcal** is a Python implementation of the ray-tracing-based analytical calculation of system response matrix of a single photon emission tomography system. Key features of the project are:
+- Almost 100% Numpy-based, transition to a CUDA capable system should be easy with Python packages like [CuPy](https://cupy.dev/)
+- It is written in an MPI-ready style. With the help of [mpi4py](https://mpi4py.readthedocs.io/en/stable/), we can run the calculation in parallel with a short Python script.
+- System matrix I/O is handled with [h5py](https://docs.h5py.org/en/stable/) package. The package provides a convenient API for writing data in parallel with MPI.
 
-### Dependency
 
-- `Python` version 3
-- `Numpy`
-- `MPI` can be `Open MPI` or `Intel MPI`
 
-### Running on UB CCR HPC
+# Get Started 
 
-#### On interactive node
+1. Install mpi4py 
 
-1. Ask for an interactive node and login
+2. Install HDF5 parallel version, check [h5py-paralell](https://docs.h5py.org/en/stable/mpi.html#)
 
-```
-salloc --qos=nih --partition=general-compute --job-name "interactive-job" --nodes=1 --ntasks=16 --mem=32G  --time=03:00:00;srun --pty /bin/bash --login
-```
+3. Install h5py
 
-2. Setup the environment with `module load`, we need OpenMPI.
-
-`module load ucx/1.13.1` is suggested by the ccr support team to suppress the error message but not working for now. However the error message will not prevent us from getting the result.
-```
-module load gcc/11.2.0 openmpi/4.1.1
-module load scipy-bundle/2021.10
-module load ucx/1.13.1
+4. Download the code
+``` 
+git https://github.com/spebt/pymatcal.git
 ```
 
-3. Install the python package dependency: mpi4py, numpy and pyyaml. This step only needs to be done once. But it won't hurt to put it in the `sbatch` script.
+5. Setup with `pipenv`
 ```
-python3 -m pip install -r requirements.txt
+cd pymatcal
+pipenv install && pipenv shell
 ```
-
-4. Running `pair-calc.py` to produce the system response matrix file
+6. Run the test
 ```
-mpirun python pair-calc.py
-```
-
-### Running on local desktops
-#### Tested Enviornment:
-
-- `Ubuntu` 22.04.1, `Linux kernel` 6.5.0-21-generic
-- `Python` 3.10.12 with `GCC` 11.4.0
-- `Open MPI` 4.1.2
-- `Numpy` 1.26.3
-
-## readSysmat.py
-This script can be used to plot the calculated system response matrix
-### Dependency
-
-- `Python` version 3
-- `Numpy`
-- `Matplotlib`
-### Running the script
-Simply do:
-```
-python readSysmat.py
-```
-The script will read `configs/config.yml` and find the produced matrix. If the matrix file `.npz` is moved, you will need to modify the `readSysmat.py`
-```
-python -m venv venv
-source venv/bin/activate
-python -m pip install -e pymatcal
+cd test
+mpiexe -n 4 python get_all_ppdfs_mpi.py test_20240722_182815.yml
 ```
