@@ -3,16 +3,16 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
-[packages]
-numpy = "*"
-mpi4py = "*"
-pyyaml = "*"
-h5py = "*"
-pipfile = "*"
-pymatcal = {file = "pymatcal"}
-
 [dev-packages]
 
 [requires]
 python_version = "3.9"
 python_full_version = "3.9.6"
+
+[packages]
+numpy = "*"
+pyyaml = "*"
+jsonschema = "*"
+matplotlib = "*"
+mpi4py = "==3.1.6"
+h5py = "*"
