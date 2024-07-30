@@ -8,7 +8,7 @@
 
 import os
 import sys
-project = 'pysysmat'
+project = 'pymatcal'
 copyright = '2024, Fang Han'
 author = 'Fang Han'
 release = '0.0.1'
