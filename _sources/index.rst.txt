@@ -62,12 +62,7 @@ Quick Start
 ================
 sudo apt-get install openmpi-bin
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
 
-   deps.md
-   api-ref.md
 
 
 
