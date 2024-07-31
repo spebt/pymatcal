@@ -166,3 +166,4 @@ cython_debug/
 *.npz
 *.hdf5
 # *.png
+test/*.png

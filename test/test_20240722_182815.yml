@@ -1,5 +1,7 @@
-# This is an automatically generated systematic matrix configuration file in YAML format
-# Generated on: 07/22/24 18:28:15
+# System matrix configuration file in YAML format for test
+# Revison: 0.0.2
+# Date: 2024-07-31
+
 detector:
   detector geometry:
     # detector geometry in millimeter.
