@@ -13,6 +13,7 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Quick Start" href="quickstart.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -26,56 +27,93 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          <a href="quickstart.html" title="Next document">Quick Start</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
           
 
           <div class="body" role="main">
             
   <section id="pymatcal-documentation">
 <h1>pymatcal documentation<a class="headerlink" href="#pymatcal-documentation" title="Link to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
 <section id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
-<p><strong>pymatcal</strong> is a Python implementation of the ray-tracing-based analytical calculation of system response matrix of a single photon emission tomography system. Key features of the project are:
-- Almost 100% Numpy-based, transition to a CUDA capable system should be easy with Python packages like <a class="reference external" href="https://cupy.dev/">CuPy</a>
-- It is written in an MPI-ready style. With the help of <a class="reference external" href="https://mpi4py.readthedocs.io/en/stable/">mpi4py</a>, we can run the calculation in parallel with a short Python script.
-- System matrix I/O is handled with <a class="reference external" href="https://docs.h5py.org/en/stable/">h5py</a> package. The package provides a convenient API for writing data in parallel with MPI.</p>
-</section>
-<section id="get-started">
-<h2>Get Started<a class="headerlink" href="#get-started" title="Link to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p>Install mpi4py</p></li>
-<li><p>Install HDF5 parallel version, check <a class="reference external" href="https://docs.h5py.org/en/stable/mpi.html#">h5py-paralell</a></p></li>
-<li><p>Install h5py</p></li>
-<li><p>Download the code</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">spebt</span><span class="o">/</span><span class="n">pymatcal</span><span class="o">.</span><span class="n">git</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="5">
-<li><p>Setup with <code class="docutils literal notranslate"><span class="pre">pipenv</span></code></p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">pymatcal</span>
-<span class="n">pipenv</span> <span class="n">install</span> <span class="o">&amp;&amp;</span> <span class="n">pipenv</span> <span class="n">shell</span>
-</pre></div>
-</div>
-<ol class="arabic simple" start="6">
-<li><p>Run the test</p></li>
-</ol>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">test</span>
-<span class="n">mpiexe</span> <span class="o">-</span><span class="n">n</span> <span class="mi">4</span> <span class="n">python</span> <span class="n">get_all_ppdfs_mpi</span><span class="o">.</span><span class="n">py</span> <span class="n">test_20240722_182815</span><span class="o">.</span><span class="n">yml</span>
-</pre></div>
-</div>
-</section>
-<section id="example-ppdf">
-<h2>Example PPDF<a class="headerlink" href="#example-ppdf" title="Link to this heading">¶</a></h2>
+<p><strong>pymatcal</strong> is a Python implementation of the ray-tracing-based analytical calculation of system response matrix of a single photon emission tomography system.</p>
+<p>Key features of the project are:</p>
+<ul class="simple">
+<li><p><strong>Almost 100% Numpy-based.</strong></p></li>
+</ul>
+<p>Transition to a CUDA capable system should be easy with Python packages like <a class="reference external" href="https://cupy.dev/">CuPy</a></p>
+<ul class="simple">
+<li><p><strong>It is written in an MPI-ready style.</strong></p></li>
+</ul>
+<p>With the help of <a class="reference external" href="https://mpi4py.readthedocs.io/en/stable/">mpi4py</a>, we can run the calculation in parallel with a short Python script.</p>
+<ul class="simple">
+<li><p><strong>System matrix I/O can be handled with</strong> <a class="reference external" href="https://docs.h5py.org/en/stable/">h5py</a> <strong>package.</strong></p></li>
+</ul>
+<p>The package provides a convenient API for writing data in parallel with MPI.</p>
+<section id="example-ppdfs">
+<h3>Example PPDFs<a class="headerlink" href="#example-ppdfs" title="Link to this heading">¶</a></h3>
 <p>The following image shows the PPDFs of a single pinhole detector unit. The detector system consists of a single pinhole and a detector system. The image is generated by the <cite>pymatcal</cite> package.</p>
 <a class="reference internal image-reference" href="_images/test_20240722_182815_data_det_000.png"><img alt="singe-pinhole-1-detetor-unit" class="align-center" src="_images/test_20240722_182815_data_det_000.png" style="width: 1024px;" />
 </a>
-<p>sudo apt-get install openmpi-bin</p>
+<section id="dependencies">
+<h4>Dependencies:<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h4>
+<section id="must-have">
+<h5>Must have:<a class="headerlink" href="#must-have" title="Link to this heading">¶</a></h5>
+<section id="python-3-9-6-and-above">
+<h6>Python 3.9.6 and above<a class="headerlink" href="#python-3-9-6-and-above" title="Link to this heading">¶</a></h6>
+</section>
+<section id="core-python-packages">
+<h6>Core Python packages:<a class="headerlink" href="#core-python-packages" title="Link to this heading">¶</a></h6>
+<ul class="simple">
+<li><p><a class="reference external" href="https://numpy.org/install/">Numpy</a></p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/PyYAML/">pyyaml</a></p></li>
+<li><p><a class="reference external" href="https://python-jsonschema.readthedocs.io/en/stable/">jsonschema</a></p></li>
+</ul>
+</section>
+</section>
+<section id="on-ub-ccr-hpc-cluster-nodes">
+<h5>On UB CCR HPC cluster nodes<a class="headerlink" href="#on-ub-ccr-hpc-cluster-nodes" title="Link to this heading">¶</a></h5>
+<p>Load modules:</p>
+<ol class="arabic simple">
+<li><p><em>Intel toolchain 2022.00</em></p></li>
+<li><p><em>hdf5/1.14.1</em></p></li>
+<li><p><em>python/3.9.6-bare</em></p></li>
+</ol>
+<p>In a single line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ml<span class="w"> </span>intel<span class="w"> </span>hdf5/1.14.1<span class="w"> </span>python/3.9.6-bare
+</pre></div>
+</div>
+</section>
+</section>
+</section>
 </section>
 </section>
 
 
           </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          <a href="quickstart.html" title="Next document">Quick Start</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
           
         </div>
       </div>
@@ -88,27 +126,39 @@
 
 
 
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=spebt&repo=pymatcal&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
 
 
-<h3>Navigation</h3>
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-ref.html">API Reference</a></li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="quickstart.html" title="next chapter">Quick Start</a></li>
   </ul></li>
 </ul>
 </div>
-<search id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</search>
-<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
