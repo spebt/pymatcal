@@ -9,4 +9,4 @@
 
 
 # Get Started 
-Check the documentation [here](spebt.github.io/pymatcal)
+Check the [online documentation](https://spebt.github.io/pymatcal/))
