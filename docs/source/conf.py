@@ -29,10 +29,27 @@ intersphinx_mapping = {
 }
 templates_path = ['_templates']
 exclude_patterns = []
-
+mater_doc = 'toc'
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
+
+html_sidebars = {
+    '**': [
+        'about.html',
+        'searchfield.html',
+        'navigation.html',
+        'relations.html',
+        'donate.html',
+    ]
+}
+
+html_theme_options = {
+    'github_user': 'spebt',
+    'github_repo': 'pymatcal',
+    'github_button': True,
+    'show_relbars': True,
+}
