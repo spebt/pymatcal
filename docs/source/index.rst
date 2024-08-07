@@ -3,8 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-pymatcal documentation
-======================
+============
+Introduction
+============
 .. Add your content using ``reStructuredText`` syntax. See the reStructuredText
    https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
    documentation for details.
@@ -14,12 +15,12 @@ pymatcal documentation
    :maxdepth: 2
    :caption: Table of Contents:
 
+   self
    Quick Start <quickstart.rst>
    API Reference <api-ref.md>
+   Configuration File Schema <conf-schema.rst>
 
-=================
-Introduction
-=================
+
 **pymatcal** is a Python implementation of the ray-tracing-based analytical calculation of system response matrix of a single photon emission tomography system. 
 
 Key features of the project are:

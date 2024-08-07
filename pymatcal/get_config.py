@@ -110,6 +110,9 @@ def get_config(confName: str):
         else:
             mydict["angle"] = 0.0
 
+        if "rotations" in yamlConfig["detector-to-image"].keys():
+            mydict["rotations"] = np.asarray(
+                yamlConfig["detector-to-image"]["rotations"],dtype="d")
     except Exception as err:
         print("Parse Error!\n%s" % err)
         raise

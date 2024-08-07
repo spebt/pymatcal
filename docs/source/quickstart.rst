@@ -27,7 +27,7 @@ Quick Start
 
 .. code-block:: bash
 
-   cd test
+   cd examples
 
 - With MPI library and [Parallel-HDF5](https://support.hdfgroup.org/HDF5/PHDF5/) library properly setup
    

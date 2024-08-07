@@ -1,6 +1,7 @@
 {
-    "title": "SPEBT system response matrix generation configuration schema",
-    "description": "SPEBT system response matrix generation configuration schema",
+    "title": "SPEBT configuration schema",
+    "description": "SPEBT system response matrix generation package configuration file schema. The configuration file is a YAML file.",
+    "version": "0.2.0",
     "type": "object",
     "properties": {
         "detector": {
@@ -79,6 +80,13 @@
                 },
                 "rotation": {
                     "type": "number"
+                },
+                "rotations": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 2
                 }
             },
             "required": [
