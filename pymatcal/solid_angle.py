@@ -1,6 +1,7 @@
 import numpy as np
 from ._utils import set_module
 
+__all__ = ["get_solid_angles", "get_norm_areas"]
 
 @set_module('pymatcal')
 def get_solid_angles(abpairs: np.ndarray, incs: np.ndarray) -> np.ndarray:

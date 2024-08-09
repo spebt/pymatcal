@@ -1,5 +1,5 @@
 {
-    "title": "SPEBT configuration schema",
+    "title": "SPEBT main schema",
     "description": "SPEBT system response matrix generation package configuration file schema. The configuration file is a YAML file.",
     "version": "0.2.0",
     "type": "object",
@@ -77,9 +77,6 @@
                 "radial distance": {
                     "type": "string",
                     "pattern": "^([0-9]+)(\\.([0-9]+))? ([a-z]+)$"
-                },
-                "rotation": {
-                    "type": "number"
                 },
                 "rotations": {
                     "type": "array",

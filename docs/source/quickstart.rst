@@ -47,3 +47,11 @@ Quick Start
 
    python plot_ppdf_hdf5.py test/test_20240722_182815.hdf5 test_20240722_182815.yml
 
+Install the package locally
+===========================
+To install the package locally, run the following command in the root directory of the package:
+
+.. code-block:: bash
+
+   pip install .
+

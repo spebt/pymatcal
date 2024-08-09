@@ -4,8 +4,9 @@ from pymatcal.intersections import *
 from pymatcal.subdivs import *
 from pymatcal.solid_angle import *
 from pymatcal.pair_ppdf import *
+# import pymatcal._schemas as schemas
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __all__ = [
     "get_config",
     "get_pair_ppdf",

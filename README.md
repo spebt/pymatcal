@@ -13,6 +13,12 @@
     - [pyyaml](https://pypi.org/project/PyYAML/)
     - [jsonschema](https://python-jsonschema.readthedocs.io/en/stable/)
 
+## Install
+### From internet(PyPI)
+PyPI hosted internet-based installation is planned
+### From local
+Check out [Web-based Documentation](https://spebt.github.io/pymatcal)
+
 ## Documentation
 
 Check out [Web-based Documentation](https://spebt.github.io/pymatcal)

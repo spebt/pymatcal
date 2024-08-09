@@ -1,14 +1,18 @@
 import yaml
 import numpy as np
 import jsonschema
-import json
-import os
 import re
 from ._utils import set_module
+import pymatcal.schema as schemas
 
-package_dir = os.path.dirname(os.path.abspath(__file__))
 
-@set_module('pymatcal')
+__all__ = ["get_config", "get_img_voxel_center", "get_procIds"]
+# import importlib.resources
+# schema_dir = importlib.resources.files("pymatcal._schemas")
+# schema_path = pathlib.Path(schema_dir , 'config_schema.json')
+
+
+@set_module("pymatcal")
 def __parse_dist(str: str) -> float:
     """
     Parses a string representing a distance value with unit and returns the distance in millimeters.
@@ -21,7 +25,7 @@ def __parse_dist(str: str) -> float:
     """
     p = "^([0-9]+)(\\.[0-9]+)? ([a-z]+)$"
     result = re.match(p, str)
-    unit = ''
+    unit = ""
     value = 0
     ngroups = len(result.groups())
     # print(ngroups)
@@ -33,24 +37,37 @@ def __parse_dist(str: str) -> float:
             value = float(result.group(1))
             unit = result.group(3)
         else:
-            value = float(result.group(1)+result.group(2))
+            value = float(result.group(1) + result.group(2))
             unit = result.group(3)
     else:
         raise SyntaxError("Invalid detector to FOV distance!!")
 
-    if unit == 'mm':
+    if unit == "mm":
         return value
-    elif unit == 'cm':
-        return value*10
-    elif unit == 'm':
-        return value*1000
+    elif unit == "cm":
+        return value * 10
+    elif unit == "m":
+        return value * 1000
     else:
         raise SyntaxError("Invalid detector to FOV distance unit!!")
 
 
+def __parse_rotations(rot_dict: dict) -> np.ndarray:
+    """
+    Parses a string representing the rotations of the detector relative to the FOV.
+    The rotations are given in degrees.
+
+    :param rot_dict: Python dictionary containing the rotations of the detector relative to the FOV.
+    :type: rot_dict: dict
+    :return: .
+    :rtype: Numpy.ndarray
+    """
+    rotation_angles = []
+
+    return rotation_angles
 
 
-@set_module('pymatcal')
+@set_module("pymatcal")
 def get_config(confName: str):
     """
     Load and validate a configuration file in YAML format.
@@ -62,11 +79,9 @@ def get_config(confName: str):
     :raises: Exception if the configuration file fails validation or parsing.
     """
     schema = {}
-    schemaFName = os.path.join(package_dir, "config_schema.json")
-    # print(schemaFName)
-    with open(schemaFName, "r") as data:
-        schema = json.load(data)
-        # print(type(schema))
+    # schemaFName = os.path.join(package_dir, "/config_schema.json")
+
+    schema = schemas.main
     with open(confName, "r") as stream:
         try:
             yamlConfig = yaml.safe_load(stream)
@@ -77,9 +92,7 @@ def get_config(confName: str):
             raise
     mydict = {}
     try:
-        geoms = np.asarray(
-            yamlConfig["detector"]["detector geometry"], dtype="d"
-        )
+        geoms = np.asarray(yamlConfig["detector"]["detector geometry"], dtype="d")
         mydict["det geoms"] = np.asarray(
             yamlConfig["detector"]["detector geometry"], dtype="d"
         )
@@ -92,34 +105,40 @@ def get_config(confName: str):
         mydict["active indices"] = indices
         mydict["active dets"] = np.array(active_dets)
         mydict["det nsub"] = np.asarray(
-            yamlConfig["detector"]["N-subdivision xyz"], dtype=np.int32)
+            yamlConfig["detector"]["N-subdivision xyz"], dtype=np.int32
+        )
 
         mydict["img nsub"] = np.asarray(
-            yamlConfig["image"]["N-subdivision xyz"], dtype=np.int32)
+            yamlConfig["image"]["N-subdivision xyz"], dtype=np.int32
+        )
 
         mydict["img nvx"] = np.asarray(
-            yamlConfig["image"]["N-voxels xyz"], dtype=np.int32)
+            yamlConfig["image"]["N-voxels xyz"], dtype=np.int32
+        )
 
-        mydict["mmpvx"] = np.asarray(
-            yamlConfig["image"]["mm-per-voxel xyz"], dtype="d")
+        mydict["mmpvx"] = np.asarray(yamlConfig["image"]["mm-per-voxel xyz"], dtype="d")
         mydict["dist"] = __parse_dist(
-            yamlConfig["detector-to-image"]["radial distance"])
+            yamlConfig["detector-to-image"]["radial distance"]
+        )
         if "rotation" in yamlConfig["detector-to-image"].keys():
-            mydict["angle"] = float(
-                yamlConfig["detector-to-image"]["rotation"])
+            mydict["angle"] = float(yamlConfig["detector-to-image"]["rotation"])
         else:
             mydict["angle"] = 0.0
 
         if "rotations" in yamlConfig["detector-to-image"].keys():
             mydict["rotations"] = np.asarray(
-                yamlConfig["detector-to-image"]["rotations"],dtype="d")
+                yamlConfig["detector-to-image"]["rotations"], dtype="d"
+            )
     except Exception as err:
         print("Parse Error!\n%s" % err)
         raise
     return mydict
 
-@set_module('pymatcal')
-def get_img_voxel_center(id: np.uint64, nvx: np.ndarray, mmpvx: np.ndarray) -> np.ndarray:
+
+@set_module("pymatcal")
+def get_img_voxel_center(
+    id: np.uint64, nvx: np.ndarray, mmpvx: np.ndarray
+) -> np.ndarray:
     """
     Calculate the center coordinates of a voxel given its index.
 
@@ -134,7 +153,7 @@ def get_img_voxel_center(id: np.uint64, nvx: np.ndarray, mmpvx: np.ndarray) -> n
     :raises AssertionError: If the given voxel index is invalid.
     """
     # make sure the 1-D index given is valid
-    assert (id < np.prod(nvx)), 'Invalid voxel index!'
+    assert id < np.prod(nvx), "Invalid voxel index!"
     # index order, slowest to quickest changing: z -> y -> x
     zid = id // (nvx[0] * nvx[1])
     xyid = id % (nvx[0] * nvx[1])
@@ -156,9 +175,11 @@ def get_procIds(ntasks: np.uint64, nprocs: np.uint64) -> np.ndarray:
     :rtype: np.ndarray
     """
     nPerProc_add = np.zeros(nprocs)
-    nPerProc_add[0:ntasks % nprocs] = np.ones(ntasks % nprocs)
+    nPerProc_add[0 : ntasks % nprocs] = np.ones(ntasks % nprocs)
     idxsPerProc = np.cumsum(
-        np.insert(np.ones(nprocs)*(ntasks // nprocs)+nPerProc_add, 0, 0), dtype=np.uint32)
+        np.insert(np.ones(nprocs) * (ntasks // nprocs) + nPerProc_add, 0, 0),
+        dtype=np.uint32,
+    )
     idxsPerProc = np.vstack((idxsPerProc[:-1], idxsPerProc[1:]))
     return idxsPerProc
 

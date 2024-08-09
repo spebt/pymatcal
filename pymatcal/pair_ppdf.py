@@ -7,6 +7,8 @@ from .subdivs import *
 from .coord_transform import *
 from ._utils import set_module
 
+__all__ = ["get_pair_ppdf", "get_pair_ppdf_area", "get_pair_ppdf_binary"]
+
 @set_module('pymatcal')
 def get_pair_ppdf(ida: numpy.uint64, idb: numpy.uint64, img_subdivs: dict, config: dict) -> numpy.float64:
     """

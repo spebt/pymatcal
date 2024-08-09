@@ -50,5 +50,4 @@ detector-to-image:
   # acceptable units are mm, cm, m
   radial distance: 55 mm
   
-  # rotation of the detector relative to the FOV in degrees
-  rotation: 0
+  # rotations of the detector relative to the FOV in degrees
