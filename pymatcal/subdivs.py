@@ -2,10 +2,10 @@ import numpy as np
 from .coord_transform import *
 from ._utils import set_module
 
-__all__ = ["get_img_subdivs", "get_det_subdivs", "get_centroids", "append_subdivs"]
+__all__ = ["get_fov_subdivs", "get_det_subdivs", "get_centroids", "append_subdivs"]
 
 @set_module('pymatcal')
-def get_img_subdivs(mmpvx, nsubs):
+def get_fov_subdivs(mmpvx, nsubs):
     """
     Get the subdivisions of an image.
 

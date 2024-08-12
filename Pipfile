@@ -19,6 +19,6 @@ h5py = "*"
 setuptools = "*"
 setuptools-scm = "*"
 ipython = "*"
-pymatcal = {file = "."}
 sphinx-toolbox = "*"
 sphinx-design = "*"
+pymatcal = {file = "."}

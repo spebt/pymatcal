@@ -10,44 +10,60 @@ detector:
     # parameter 2 to 3: tangential coordiantes, y_0, y_1
     # parameter 4 to 5: axial coordiantes, z_0, z_1
     # parameter 6: cuboid type identifier.
-    # 0 is non-detector, 1 and greater numbers are sequential 
+    # 0 is non-detector, 1 and greater numbers are sequential
     # indices for detector units.
     # parameter 7: cuboid attenuation coefficient, per millimeter
     [
       [0.0, 1.0, 0.0, 49.5, -0.5, 0.5, 0.0, 10.0],
       [0.0, 1.0, 50.5, 100.0, -0.5, 0.5, 0.0, 10.0],
-      [49.0, 52.0, 49.0, 51.0, -0.5, 0.5, 1.0, 0.48]
+      [49.0, 52.0, 49.0, 51.0, -0.5, 0.5, 1.0, 0.48],
+      [52.0, 55.0, 51.0, 53.0, -0.5, 0.5, 2.0, 0.48],
+      [55.0, 58.0, 49.0, 51.0, -0.5, 0.5, 3.0, 0.48],
     ]
-  
+
   # Number of subdivisions of a detector unit in x-dimension,
   # y-dimension and z-dimension
   N-subdivision xyz: [4, 4, 1]
-  
+
   # Array of integer numbers.
-  # These numbers are used to indicate which detector unit 
-  # defined in the detector geometry array are considered 
+  # These numbers are used to indicate which detector unit
+  # defined in the detector geometry array are considered
   # active detector units.
   # PPDFs are calculated only for active detector units
-  active geometry indices: [1]
+  active geometry indices: [1,2,3]
 
 # Image space parameters
-image:
+FOV:
   # Number of voxels of the image space (FOV) in x-dimension,
   # y-dimension and z-dimension
   N-voxels xyz: [100, 100, 1]
-  
+
   # image voxel size in millimeter in x-dimension, y-dimension,
   # and z-dimension
   mm-per-voxel xyz: [1, 1, 1]
 
-  # Number of subdivisions of an image voxel in x dimension, 
+  # Number of subdivisions of an image voxel in x dimension,
   # y dimension and z dimension
   N-subdivision xyz: [4, 4, 1]
-  
+
 # Image space to detector space relative positioning
-detector-to-image:
+relation:
   # detector front edge to FOV center distance in radial direction
   # acceptable units are mm, cm, m
-  radial distance: 55 mm
-  
+  radial shift:
+    format: list
+    data: [100,90]
+
+  # detector center to FOV center distance in tangential direction
+  # acceptable units are mm, cm, m
+  tangential shift:
+    format: list
+    data: [1,2,3]
+
   # rotations of the detector relative to the FOV in degrees
+  # acceptable units are degrees, radians
+  rotation:
+    format: range
+    start: 0
+    N: 6
+    step: 10

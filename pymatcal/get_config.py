@@ -1,70 +1,58 @@
 import yaml
 import numpy as np
-import jsonschema
+from jsonschema import Draft7Validator
 import re
 from ._utils import set_module
-import pymatcal.schema as schemas
+import importlib.resources as _resources
+import json as _json
+import pymatcal._schema as _schema
+from referencing import Registry, Resource
+from referencing.jsonschema import DRAFT7
 
-
-__all__ = ["get_config", "get_img_voxel_center", "get_procIds"]
+__all__ = ["get_config", "get_fov_voxel_center", "get_procIds"]
 # import importlib.resources
 # schema_dir = importlib.resources.files("pymatcal._schemas")
 # schema_path = pathlib.Path(schema_dir , 'config_schema.json')
 
 
 @set_module("pymatcal")
-def __parse_dist(str: str) -> float:
-    """
-    Parses a string representing a distance value with unit and returns the distance in millimeters.
-
-    :param str: The string representing the distance value with unit.
-    :type str: str
-    :return: The distance value in millimeters.
-    :rtype: float
-    :raises SyntaxError: If the input string is not in the correct format or the unit is invalid.
-    """
-    p = "^([0-9]+)(\\.[0-9]+)? ([a-z]+)$"
-    result = re.match(p, str)
-    unit = ""
-    value = 0
-    ngroups = len(result.groups())
-    # print(ngroups)
-    if ngroups == 2:
-        value = float(result.group(1))
-        unit = result.group(2)
-    elif ngroups == 3:
-        if result.group(2) is None:
-            value = float(result.group(1))
-            unit = result.group(3)
-        else:
-            value = float(result.group(1) + result.group(2))
-            unit = result.group(3)
+def __parse_transformation_data(idata:dict) -> dict:
+    if idata["format"] == "range":
+        try: 
+            start = float(idata["start"])
+            ns = int(idata["N"])
+            step = float(idata["step"])
+        except: raise SyntaxError("Invalid transformation range data!!")
+        return start + np.arange(0, ns) * step
+    elif idata["format"] == "list":
+        try: iarr = np.array(idata["data"], dtype="d")
+        except: raise SyntaxError("Invalid transformation data enumerated")
+        if len(iarr) == 0 :
+            raise SyntaxError("Invalid transformation data enumerated, at least 1 number!!")
+        return iarr
     else:
-        raise SyntaxError("Invalid detector to FOV distance!!")
-
-    if unit == "mm":
-        return value
-    elif unit == "cm":
-        return value * 10
-    elif unit == "m":
-        return value * 1000
-    else:
-        raise SyntaxError("Invalid detector to FOV distance unit!!")
+        raise SyntaxError("Invalid transformation data format!!")
 
 
-def __parse_rotations(rot_dict: dict) -> np.ndarray:
-    """
-    Parses a string representing the rotations of the detector relative to the FOV.
-    The rotations are given in degrees.
 
-    :param rot_dict: Python dictionary containing the rotations of the detector relative to the FOV.
-    :type: rot_dict: dict
-    :return: .
-    :rtype: Numpy.ndarray
-    """
-    rotation_angles = []
 
-    return rotation_angles
+def __get_schema_registry():
+    # Load the schema
+    _schema_dir = _resources.files(_schema)
+    _schema_version = "v1"
+    _basenames = ["main", "detector", "relation", "FOV", "transformation_data"]
+
+    schema_registry = Registry()
+    for _basename in _basenames:
+        loaded = Resource(
+            contents=_json.load(
+                open(_schema_dir / _schema_version / f"{_basename}.json", "r")
+            ),
+            specification=DRAFT7,
+        )
+        
+        schema_registry = loaded @ schema_registry
+    return schema_registry
 
 
 @set_module("pymatcal")
@@ -78,14 +66,12 @@ def get_config(confName: str):
     :rtype: dict
     :raises: Exception if the configuration file fails validation or parsing.
     """
-    schema = {}
-    # schemaFName = os.path.join(package_dir, "/config_schema.json")
-
-    schema = schemas.main
+    _schema_registry = __get_schema_registry()
+    validator = Draft7Validator(schema=_schema_registry.contents('/v1/main.json'),registry=_schema_registry)
     with open(confName, "r") as stream:
         try:
             yamlConfig = yaml.safe_load(stream)
-            jsonschema.validate(instance=yamlConfig, schema=schema)
+            validator.validate(instance=yamlConfig)
         except Exception as err:
             print("Error:", "Failed validating configuration file!!")
             print("Error Messages:\n%s" % err.message)
@@ -108,27 +94,21 @@ def get_config(confName: str):
             yamlConfig["detector"]["N-subdivision xyz"], dtype=np.int32
         )
 
-        mydict["img nsub"] = np.asarray(
-            yamlConfig["image"]["N-subdivision xyz"], dtype=np.int32
+        mydict["fov nsub"] = np.asarray(
+            yamlConfig["FOV"]["N-subdivision xyz"], dtype=np.int32
         )
 
-        mydict["img nvx"] = np.asarray(
-            yamlConfig["image"]["N-voxels xyz"], dtype=np.int32
+        mydict["fov nvx"] = np.asarray(
+            yamlConfig["FOV"]["N-voxels xyz"], dtype=np.int32
         )
 
-        mydict["mmpvx"] = np.asarray(yamlConfig["image"]["mm-per-voxel xyz"], dtype="d")
-        mydict["dist"] = __parse_dist(
-            yamlConfig["detector-to-image"]["radial distance"]
-        )
-        if "rotation" in yamlConfig["detector-to-image"].keys():
-            mydict["angle"] = float(yamlConfig["detector-to-image"]["rotation"])
-        else:
-            mydict["angle"] = 0.0
-
-        if "rotations" in yamlConfig["detector-to-image"].keys():
-            mydict["rotations"] = np.asarray(
-                yamlConfig["detector-to-image"]["rotations"], dtype="d"
-            )
+        mydict["mmpvx"] = np.asarray(yamlConfig["FOV"]["mm-per-voxel xyz"], dtype="d")
+        mydict["rotation"] = __parse_transformation_data(yamlConfig["relation"]["rotation"])
+        mydict["r shift"] = __parse_transformation_data(yamlConfig["relation"]["radial shift"])
+        mydict["t shift"] = __parse_transformation_data(yamlConfig["relation"]["tangential shift"])
+        # mydict["relation"] = __parse_relation(
+        #     yamlConfig["relation"]
+        # )
     except Exception as err:
         print("Parse Error!\n%s" % err)
         raise
@@ -136,7 +116,7 @@ def get_config(confName: str):
 
 
 @set_module("pymatcal")
-def get_img_voxel_center(
+def get_fov_voxel_center(
     id: np.uint64, nvx: np.ndarray, mmpvx: np.ndarray
 ) -> np.ndarray:
     """
