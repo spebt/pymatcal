@@ -22,7 +22,9 @@ jobs:
           cache: 'pip' # caching pip dependencies
 
       - name: Setup Python dependencies  
-        run: pip install jsonschema sphinx numpy myst-parser pyyaml sphinx-jsonschema
+        run: pip install jsonschema sphinx numpy myst-parser pyyaml sphinx-toolbox sphinx-design
+      - name: Install pymatcal
+        run: pip install -e .
       
       - name: Sphinx build
         run: |
