@@ -9,18 +9,29 @@ import re
 configFname = sys.argv[1]
 config = pymatcal.get_config(configFname)
 outFname = re.match('^(.+).yml',configFname).group(1)+'.hdf5'
-NA = np.prod(config['img nvx'])
-NB = config['active dets'].shape[0]
-NR = 1
-if 'rotations' in config:
-    NR = config['rotations'].shape[0]
+Nfov = np.prod(config["fov nvx"])
+Ndet = config["active dets"].shape[0]
+Nrot = config["rotation"].shape[0]
+Nrshift = config["r shift"].shape[0]
+Ntshift = config["t shift"].shape[0]
 
-idmap = np.indices((NA, NB)).reshape(2, NA*NB).T
-img_subdivs = pymatcal.get_img_subdivs(config['mmpvx'], config['img nsub'])
-ntasks = np.prod(config['img nvx'])*config['active dets'].shape[0]
-# f = h5py.File(outFname, 'w')
-# dset = f.create_dataset('test', (NB,NA), dtype=np.float64)
-# for idx in range(0,ntasks):
-#     dset[idmap[idx,1],idmap[idx,0]] = pymatcal.get_pair_ppdf(idmap[idx,0],idmap[idx,1],img_subdivs,config)
-#     # dset[idmap[idx,1],idmap[idx,0]] = 1
-# f.close()
+
+ntasks = Nfov * Ndet * Nrot * Nrshift * Ntshift
+idmap = np.indices((Ntshift, Nrshift, Nrot, Ndet, Nfov)).reshape(5, ntasks).T
+
+fov_subdivs = pymatcal.get_fov_subdivs(config['mmpvx'], config['img nsub'])
+f = h5py.File(outFname, "w")
+dset = f.create_dataset("sysmat", (Ntshift, Nrshift, Nrot, Ndet, Nfov), dtype=np.float64)
+for idx in range(0, ntasks):
+    dset[idmap[idx, 0], idmap[idx, 1], idmap[idx, 2], idmap[idx, 3], idmap[idx, 4]] = (
+        pymatcal.get_pair_ppdf(
+            idmap[idx, 4],
+            idmap[idx, 3],
+            idmap[idx, 2],
+            idmap[idx, 1],
+            idmap[idx, 0],
+            fov_subdivs,
+            config,
+        )
+    )
+f.close()

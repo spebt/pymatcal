@@ -23,14 +23,14 @@ detector:
 
   # Number of subdivisions of a detector unit in x-dimension,
   # y-dimension and z-dimension
-  N-subdivision xyz: [4, 4, 1]
+  N-subdivision xyz: [1, 1, 1]
 
   # Array of integer numbers.
   # These numbers are used to indicate which detector unit
   # defined in the detector geometry array are considered
   # active detector units.
   # PPDFs are calculated only for active detector units
-  active geometry indices: [1,2,3]
+  active geometry indices: [1]
 
 # Image space parameters
 FOV:
@@ -49,21 +49,21 @@ FOV:
 # Image space to detector space relative positioning
 relation:
   # detector front edge to FOV center distance in radial direction
-  # acceptable units are mm, cm, m
+  # acceptable units are mm
   radial shift:
     format: list
-    data: [65]
+    data: [75]
 
   # detector center to FOV center distance in tangential direction
-  # acceptable units are mm, cm, m
+  # acceptable units are mm
   tangential shift:
     format: list
-    data: [0]
+    data: [0,10]
 
   # rotations of the detector relative to the FOV in degrees
-  # acceptable units are degrees, radians
+  # acceptable units are degrees
   rotation:
     format: range
     start: 0
-    N: 6
+    N: 2
     step: 10

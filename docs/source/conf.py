@@ -24,7 +24,6 @@ release = "0.0.1"
 extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.autodoc",
-    "sphinx-jsonschema",
     "sphinx.ext.mathjax",
     "myst_parser",
     'sphinx_toolbox.assets',
