@@ -7,13 +7,16 @@
 
     <title>API reference &#8212; pymatcal 0.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
     <script src="_static/documentation_options.js?v=d45e8c67"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Quick Start" href="quickstart.html" />
+    <link rel="prev" title="Example of reading a system matrix from a HDF5 file" href="guides/read_sysmat_hdf5.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -33,7 +36,7 @@
     <ul>
         <li>
           &larr;
-          <a href="quickstart.html" title="Previous document">Quick Start</a>
+          <a href="guides/read_sysmat_hdf5.html" title="Previous document">Example of reading a system matrix from a HDF5 file</a>
         </li>
     </ul>
   </nav>
@@ -78,26 +81,6 @@
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The transformed array.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)">numpy.ndarray</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymatcal.findt_2d">
-<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">findt_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abpairs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymatcal.findt_2d" title="Link to this definition">¶</a></dt>
-<dd><p>Find the intersection points between a geometry and a set of line segments in 2D.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>geoms</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><em>numpy.ndarray</em></a>) – Array of geometries, where each geometry is represented as [x0, x1, y0, y1,z0, z1, sequence, mu].</p></li>
-<li><p><strong>abpairs</strong> – Array of rays, where each ray is represented as [A_x, A_y, A_z, B_x, B_y, B_z].</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A 2D array containing the intersection points [t0, t1].</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)">numpy.ndarray</a></p>
@@ -185,28 +168,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pymatcal.get_img_subdivs">
-<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_img_subdivs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mmpvx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsubs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pymatcal.get_img_subdivs" title="Link to this definition">¶</a></dt>
-<dd><p>Get the subdivisions of an image.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mmpvx</strong> (<em>array-like</em>) – The maximum values of the x, y, and z coordinates.</p></li>
-<li><p><strong>nsubs</strong> (<em>array-like</em>) – The number of subdivisions in the x, y, and z directions.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A dictionary containing the coordinates and increments of the subdivisions.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymatcal.get_img_voxel_center">
-<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_img_voxel_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nvx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmpvx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#pymatcal.get_img_voxel_center" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pymatcal.get_fov_voxel_center">
+<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_fov_voxel_center</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nvx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmpvx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#pymatcal.get_fov_voxel_center" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the center coordinates of a voxel given its index.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -251,26 +214,6 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pymatcal.get_intersects_2d">
-<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_intersects_2d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geoms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">abpairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#pymatcal.get_intersects_2d" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the intersection points between a set of geometries and given set of rays in 2D.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>geoms</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><em>numpy.ndarray</em></a>) – Array of geometries, where each geometry is represented as [x0, x1, y0, y1,z0, z1, sequence, mu].</p></li>
-<li><p><strong>abpairs</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><em>numpy.ndarray</em></a>) – Array of rays, where each ray is represented as [Ax, Ay, Az, Bx, By, Bz].</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Array of intersection points, where each intersection point is represented as [x, y, z].</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)">numpy.ndarray</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="pymatcal.get_mtransform">
 <span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_mtransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle_deg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ty</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pymatcal.get_mtransform" title="Link to this definition">¶</a></dt>
 <dd><p>Get the transformation matrix for a given angle in degrees and translation values.</p>
@@ -289,37 +232,18 @@
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pymatcal.get_norm_areas">
-<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_norm_areas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abpairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">incs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#pymatcal.get_norm_areas" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the areas normal to the rays defined by the AB pairs. Where,
-- B represent the detector units subdivisions
-- A reprensent the FOV voxel subdivision centroids</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>abpairs</strong> (<em>np.ndarray</em>) – An array of shape (M x N, 6) containing the coordinates of FOV voxel subdivision centroids and detector unit subdivison centroids.</p></li>
-<li><p><strong>incs</strong> (<em>np.ndarray</em>) – An array of shape (3,) containing the x,y,z sizes of the detector unit subdivisions in millimeter .</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>An array of shape (M x N,) containing the areas normal to the rays defined by the AB pairs.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="pymatcal.get_pair_ppdf">
-<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_pair_ppdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ida</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_subdivs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float64</span></span></span><a class="headerlink" href="#pymatcal.get_pair_ppdf" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_pair_ppdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ida</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idrot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">idr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">idt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov_subdivs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float64</span></span></span><a class="headerlink" href="#pymatcal.get_pair_ppdf" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the pair projection probability density function (PPDF) for a pair of FOV voxel and detector unit.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ida</strong> (<em>numpy.uint64</em>) – The ID of the FOV voxel.</p></li>
 <li><p><strong>idb</strong> (<em>numpy.uint64</em>) – The ID of the second detector.</p></li>
-<li><p><strong>img_subdivs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary containing the subdivisions of the image.</p></li>
+<li><p><strong>idrot</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The ID of the rotation.</p></li>
+<li><p><strong>idr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The ID of the r-shift.</p></li>
+<li><p><strong>idt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The ID of the t-shift.</p></li>
+<li><p><strong>fov_subdivs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary containing the subdivisions of the image.</p></li>
 <li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary containing the configuration parameters.</p></li>
 </ul>
 </dd>
@@ -337,15 +261,18 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pymatcal.get_pair_ppdf_area">
-<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_pair_ppdf_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ida</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_subdivs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float64</span></span></span><a class="headerlink" href="#pymatcal.get_pair_ppdf_area" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the pair projection probability density function (PPDF) for a pair of FOV voxel and detector unit. 
+<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_pair_ppdf_area</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ida</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idrot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">idr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">idt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov_subdivs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float64</span></span></span><a class="headerlink" href="#pymatcal.get_pair_ppdf_area" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the pair projection probability density function (PPDF) for a pair of FOV voxel and detector unit.
 This function uses the projection area as the solid angle. The solid angle will not decrease as the distance between the FOV voxel and the detector unit increases.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ida</strong> (<em>numpy.uint64</em>) – The ID of the FOV voxel.</p></li>
 <li><p><strong>idb</strong> (<em>numpy.uint64</em>) – The ID of the second detector.</p></li>
-<li><p><strong>img_subdivs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary containing the subdivisions of the image.</p></li>
+<li><p><strong>idrot</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The ID of the rotation.</p></li>
+<li><p><strong>idr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The ID of the r-shift.</p></li>
+<li><p><strong>idt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The ID of the t-shift.</p></li>
+<li><p><strong>fov_subdivs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary containing the subdivisions of the image.</p></li>
 <li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary containing the configuration parameters.</p></li>
 </ul>
 </dd>
@@ -363,14 +290,17 @@ This function uses the projection area as the solid angle. The solid angle will 
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pymatcal.get_pair_ppdf_binary">
-<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_pair_ppdf_binary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ida</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_subdivs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float64</span></span></span><a class="headerlink" href="#pymatcal.get_pair_ppdf_binary" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_pair_ppdf_binary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ida</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idb</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idrot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">idr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">idt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">fov_subdivs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float64</span></span></span><a class="headerlink" href="#pymatcal.get_pair_ppdf_binary" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the pair projection probability density function (PPDF) for a pair of FOV voxel and detector unit. The PPDF value is binary, where 1 indicates that the ray is NOT blocked and 0 indicates that the pair is blocked.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ida</strong> (<em>numpy.uint64</em>) – The ID of the FOV voxel.</p></li>
 <li><p><strong>idb</strong> (<em>numpy.uint64</em>) – The ID of the second detector.</p></li>
-<li><p><strong>img_subdivs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary containing the subdivisions of the image.</p></li>
+<li><p><strong>idrot</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The ID of the rotation.</p></li>
+<li><p><strong>idr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The ID of the r-shift.</p></li>
+<li><p><strong>idt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><em>int</em></a>) – The ID of the t-shift.</p></li>
+<li><p><strong>fov_subdivs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary containing the subdivisions of the image.</p></li>
 <li><p><strong>config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary containing the configuration parameters.</p></li>
 </ul>
 </dd>
@@ -382,26 +312,6 @@ This function uses the projection area as the solid angle. The solid angle will 
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="pymatcal.get_procIds">
-<span class="sig-prename descclassname"><span class="pre">pymatcal.</span></span><span class="sig-name descname"><span class="pre">get_procIds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ntasks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nprocs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uint64</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><span class="pre">ndarray</span></a></span></span><a class="headerlink" href="#pymatcal.get_procIds" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the indices of tasks assigned to each process.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ntasks</strong> (<em>np.uint64</em>) – The total number of tasks.</p></li>
-<li><p><strong>nprocs</strong> (<em>np.uint64</em>) – The total number of processes.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A 2D array containing the start and end indices of tasks assigned to each process.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
@@ -436,7 +346,7 @@ This function uses the projection area as the solid angle. The solid angle will 
     <ul>
         <li>
           &larr;
-          <a href="quickstart.html" title="Previous document">Quick Start</a>
+          <a href="guides/read_sysmat_hdf5.html" title="Previous document">Example of reading a system matrix from a HDF5 file</a>
         </li>
     </ul>
   </nav>
@@ -474,25 +384,22 @@ This function uses the projection area as the solid angle. The solid angle will 
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
 <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/index.html">Guides</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.append_subdivs"><code class="docutils literal notranslate"><span class="pre">append_subdivs()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.coord_transform"><code class="docutils literal notranslate"><span class="pre">coord_transform()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pymatcal.findt_2d"><code class="docutils literal notranslate"><span class="pre">findt_2d()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_AB_pairs"><code class="docutils literal notranslate"><span class="pre">get_AB_pairs()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_centroids"><code class="docutils literal notranslate"><span class="pre">get_centroids()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_config"><code class="docutils literal notranslate"><span class="pre">get_config()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_det_subdivs"><code class="docutils literal notranslate"><span class="pre">get_det_subdivs()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_img_subdivs"><code class="docutils literal notranslate"><span class="pre">get_img_subdivs()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_img_voxel_center"><code class="docutils literal notranslate"><span class="pre">get_img_voxel_center()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_fov_voxel_center"><code class="docutils literal notranslate"><span class="pre">get_fov_voxel_center()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_intersections_2d"><code class="docutils literal notranslate"><span class="pre">get_intersections_2d()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_intersects_2d"><code class="docutils literal notranslate"><span class="pre">get_intersects_2d()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_mtransform"><code class="docutils literal notranslate"><span class="pre">get_mtransform()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_norm_areas"><code class="docutils literal notranslate"><span class="pre">get_norm_areas()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_pair_ppdf"><code class="docutils literal notranslate"><span class="pre">get_pair_ppdf()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_pair_ppdf_area"><code class="docutils literal notranslate"><span class="pre">get_pair_ppdf_area()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_pair_ppdf_binary"><code class="docutils literal notranslate"><span class="pre">get_pair_ppdf_binary()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_procIds"><code class="docutils literal notranslate"><span class="pre">get_procIds()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="#pymatcal.get_solid_angles"><code class="docutils literal notranslate"><span class="pre">get_solid_angles()</span></code></a></li>
 </ul>
 </li>
@@ -502,7 +409,7 @@ This function uses the projection area as the solid angle. The solid angle will 
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="quickstart.html" title="previous chapter">Quick Start</a></li>
+      <li>Previous: <a href="guides/read_sysmat_hdf5.html" title="previous chapter">Example of reading a system matrix from a HDF5 file</a></li>
   </ul></li>
 </ul>
 </div>
@@ -522,8 +429,8 @@ This function uses the projection area as the solid angle. The solid angle will 
       &#169;2024, Fang Han.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
-      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
       
       |
       <a href="_sources/api-ref.rst.txt"

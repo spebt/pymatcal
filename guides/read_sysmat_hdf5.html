@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Example of reading a system matrix from a HDF5 file &#8212; pymatcal 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API reference" href="../api-ref.html" />
+    <link rel="prev" title="Guides" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="index.html" title="Previous document">Guides</a>
+        </li>
+        <li>
+          <a href="../api-ref.html" title="Next document">API reference</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="example-of-reading-a-system-matrix-from-a-hdf5-file">
+<span id="read-sysmat-example"></span><h1>Example of reading a system matrix from a HDF5 file<a class="headerlink" href="#example-of-reading-a-system-matrix-from-a-hdf5-file" title="Link to this heading">¶</a></h1>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>import numpy as np
+import h5py
+import matplotlib.pyplot as plt
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>f = h5py.File(&#39;test_small.hdf5&#39;, &#39;r&#39;)
+sysmat = np.asarray(f[&#39;systmat&#39;])
+print(sysmat.shape)
+fig, axs = plt.subplots(1,2,figsize=(16,9))
+id_det, id_rot, id_r, id_t = (0, 0, 0, 0)
+data=sysmat[id_t,id_r,id_rot,id_det]
+# data1=sysmat[id_t,id_r,5,id_det]
+datasum = np.sum(sysmat[id_t,id_r,:,id_det],axis=0)
+
+titles=[
+    &#39;rotation angle: 0 degrees&#39;,
+    &#39;sum of all angles: 0 to 360 degrees, seperated by 10 degrees&#39;,
+]
+for id in range(0,2):
+    axs[id].set_title(titles[id])
+
+axs[0].imshow(data.reshape(100,100), origin=&#39;lower&#39;)
+# axs[1].imshow(data1.reshape(100,100), origin=&#39;lower&#39;)
+axs[1].imshow(datasum.reshape(100,100), origin=&#39;lower&#39;)
+plt.show()
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">36</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/read_sysmat_1_1.png" src="../_images/read_sysmat_1_1.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>f.close()
+f = h5py.File(&#39;test_small_rshift.hdf5&#39;, &#39;r&#39;)
+sysmat = np.asarray(f[&#39;systmat&#39;])
+print(sysmat.shape)
+fig, axs = plt.subplots(1,2,figsize=(16,9))
+id_det, id_rot, id_r, id_t = (0, 0, 0, 0)
+data=sysmat[id_t,id_r,id_rot,id_det]
+data1=sysmat[id_t,1,id_rot,id_det]
+# datasum = np.sum(sysmat[id_t,:,0,id_det],axis=0)
+axs[0].imshow(data.reshape(100,100), origin=&#39;lower&#39;)
+axs[1].imshow(data1.reshape(100,100), origin=&#39;lower&#39;)
+titles=[
+    &#39;radial shift: 75 mm&#39;,
+    &#39;radial shift: 150 mm&#39;,
+]
+for id in range(0,2):
+    axs[id].set_title(titles[id])
+# axs[1].imshow(datasum.reshape(100,100), origin=&#39;lower&#39;)
+plt.show()
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/read_sysmat_2_1.png" src="../_images/read_sysmat_2_1.png" />
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>f.close()
+f = h5py.File(&#39;test_small_tshift.hdf5&#39;, &#39;r&#39;)
+sysmat = np.asarray(f[&#39;systmat&#39;])
+print(sysmat.shape)
+fig, axs = plt.subplots(1,2,figsize=(16,9))
+id_det, id_rot, id_r, id_t = (0, 0, 0, 0)
+data=sysmat[id_t,id_r,id_rot,id_det]
+data1=sysmat[1,id_r,id_rot,id_det]
+# datasum = np.sum(sysmat[id_t,:,0,id_det],axis=0)
+axs[0].imshow(data.reshape(100,100), origin=&#39;lower&#39;)
+axs[1].imshow(data1.reshape(100,100), origin=&#39;lower&#39;)
+titles=[
+    &#39;tangential shift: 0 mm&#39;,
+    &#39;tangential shift: 10 mm&#39;,
+]
+for id in range(0,2):
+    axs[id].set_title(titles[id])
+# axs[1].imshow(datasum.reshape(100,100), origin=&#39;lower&#39;)
+plt.show()
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/read_sysmat_3_1.png" src="../_images/read_sysmat_3_1.png" />
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="index.html" title="Previous document">Guides</a>
+        </li>
+        <li>
+          <a href="../api-ref.html" title="Next document">API reference</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">pymatcal</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=spebt&repo=pymatcal&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Guides</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Example code to Read System Matrix</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api-ref.html">API Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Guides</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Guides</a></li>
+      <li>Next: <a href="../api-ref.html" title="next chapter">API reference</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Fang Han.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/guides/read_sysmat_hdf5.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
