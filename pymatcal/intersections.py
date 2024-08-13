@@ -1,6 +1,7 @@
 import numpy as np
 from ._utils import set_module
 
+__all__ = ["get_AB_pairs", "get_intersects_2d", "get_intersections_2d"]
 
 @set_module('pymatcal')
 def get_AB_pairs(pAs, pBs):

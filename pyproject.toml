@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+authors = [{ name = "Fang Han", email = "fhan0904@gmail.com" }]
+dependencies = ["numpy"]
+name = "pymatcal"
+dynamic = ["version"]
+description = "Python package for SPEBT system PPDF matrix analytical calculation"
+readme = "README.md"
+requires-python = ">=3.9.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+[project.urls]
+Homepage = "https://github.com/spebt/pymatcal/"
+Issues = "https://github.com/spebt/pymatcal/issues"
+Documentation = "https://spebt.github.io/pymatcal/"
+
+[tool.setuptools]
+include-package-data = true
+packages = ["pymatcal"]
+[tool.setuptools.package-data]
+"pymatcal"=["_schemas/*.json"]

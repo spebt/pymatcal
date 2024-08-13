@@ -1,0 +1,4 @@
+[submodule "pymatcal/_schema"]
+	path = pymatcal/_schema
+	url = https://github.com/spebt/schema
+	branch = release

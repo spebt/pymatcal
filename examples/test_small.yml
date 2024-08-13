@@ -1,0 +1,69 @@
+# System matrix configuration file in YAML format for test
+# Revison: 0.0.2
+# Date: 2024-07-31
+
+detector:
+  detector geometry:
+    # detector geometry in millimeter.
+    # Defined in cuboids with x_0, x_1, y_0, y_1, z_0, z_1
+    # parameter 0 to 1: radial coordinates, x_0, x_1
+    # parameter 2 to 3: tangential coordiantes, y_0, y_1
+    # parameter 4 to 5: axial coordiantes, z_0, z_1
+    # parameter 6: cuboid type identifier.
+    # 0 is non-detector, 1 and greater numbers are sequential
+    # indices for detector units.
+    # parameter 7: cuboid attenuation coefficient, per millimeter
+    [
+      [0.0, 1.0, 0.0, 49.5, -0.5, 0.5, 0.0, 10.0],
+      [0.0, 1.0, 50.5, 100.0, -0.5, 0.5, 0.0, 10.0],
+      [49.0, 52.0, 49.0, 51.0, -0.5, 0.5, 1.0, 0.48],
+      [52.0, 55.0, 51.0, 53.0, -0.5, 0.5, 2.0, 0.48],
+      [55.0, 58.0, 49.0, 51.0, -0.5, 0.5, 3.0, 0.48],
+    ]
+
+  # Number of subdivisions of a detector unit in x-dimension,
+  # y-dimension and z-dimension
+  N-subdivision xyz: [1, 1, 1]
+
+  # Array of integer numbers.
+  # These numbers are used to indicate which detector unit
+  # defined in the detector geometry array are considered
+  # active detector units.
+  # PPDFs are calculated only for active detector units
+  active geometry indices: [1]
+
+# Image space parameters
+FOV:
+  # Number of voxels of the image space (FOV) in x-dimension,
+  # y-dimension and z-dimension
+  N-voxels xyz: [100, 100, 1]
+
+  # image voxel size in millimeter in x-dimension, y-dimension,
+  # and z-dimension
+  mm-per-voxel xyz: [1, 1, 1]
+
+  # Number of subdivisions of an image voxel in x dimension,
+  # y dimension and z dimension
+  N-subdivision xyz: [4, 4, 1]
+
+# Image space to detector space relative positioning
+relation:
+  # detector front edge to FOV center distance in radial direction
+  # acceptable units are mm, cm, m
+  radial shift:
+    format: list
+    data: [75]
+
+  # detector center to FOV center distance in tangential direction
+  # acceptable units are mm, cm, m
+  tangential shift:
+    format: list
+    data: [0]
+
+  # rotations of the detector relative to the FOV in degrees
+  # acceptable units are degrees, radians
+  rotation:
+    format: range
+    start: 0
+    N: 36
+    step: 10

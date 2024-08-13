@@ -167,3 +167,4 @@ cython_debug/
 *.hdf5
 # *.png
 test/*.png
+examples/.virtual_documents
