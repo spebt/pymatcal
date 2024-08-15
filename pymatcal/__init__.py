@@ -5,7 +5,6 @@ from pymatcal.subdivs import *
 from pymatcal.solid_angle import *
 from pymatcal.pair_ppdf import *
 
-
 __version__ = "0.2.0"
 
 __author__ = "Fang Han"
@@ -30,4 +29,4 @@ __all__ = [
     "append_subdivs",
     "get_fov_voxel_center",
 ]
-__all__.append("schema_registry")
+# __all__.append("schema")

@@ -3,9 +3,15 @@ import numpy as np
 from jsonschema import Draft7Validator
 import re
 from ._utils import set_module
-import importlib.resources as _resources
+
+import sys
+
+if sys.version_info < (3, 10):
+    from importlib_resources import files as _files
+else:
+    from importlib.resources import files as _files
+
 import json as _json
-import pymatcal._schema as _schema
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT7
 
@@ -16,29 +22,33 @@ __all__ = ["get_config", "get_fov_voxel_center", "get_procIds"]
 
 
 @set_module("pymatcal")
-def __parse_transformation_data(idata:dict) -> dict:
+def __parse_transformation_data(idata: dict) -> dict:
     if idata["format"] == "range":
-        try: 
+        try:
             start = float(idata["start"])
             ns = int(idata["N"])
             step = float(idata["step"])
-        except: raise SyntaxError("Invalid transformation range data!!")
+        except:
+            raise SyntaxError("Invalid transformation range data!!")
         return start + np.arange(0, ns) * step
     elif idata["format"] == "list":
-        try: iarr = np.array(idata["data"], dtype="d")
-        except: raise SyntaxError("Invalid transformation data enumerated")
-        if len(iarr) == 0 :
-            raise SyntaxError("Invalid transformation data enumerated, at least 1 number!!")
+        try:
+            iarr = np.array(idata["data"], dtype="d")
+        except:
+            raise SyntaxError("Invalid transformation data enumerated")
+        if len(iarr) == 0:
+            raise SyntaxError(
+                "Invalid transformation data enumerated, at least 1 number!!"
+            )
         return iarr
     else:
         raise SyntaxError("Invalid transformation data format!!")
 
 
-
-
 def __get_schema_registry():
     # Load the schema
-    _schema_dir = _resources.files(_schema)
+    # _schema_dir = _resources.files(_schema)
+    _schema_dir = _files("pymatcal._schema")
     _schema_version = "v1"
     _basenames = ["main", "detector", "relation", "FOV", "transformation_data"]
 
@@ -50,7 +60,7 @@ def __get_schema_registry():
             ),
             specification=DRAFT7,
         )
-        
+
         schema_registry = loaded @ schema_registry
     return schema_registry
 
@@ -67,7 +77,9 @@ def get_config(confName: str):
     :raises: Exception if the configuration file fails validation or parsing.
     """
     _schema_registry = __get_schema_registry()
-    validator = Draft7Validator(schema=_schema_registry.contents('/v1/main.json'),registry=_schema_registry)
+    validator = Draft7Validator(
+        schema=_schema_registry.contents("/v1/main.json"), registry=_schema_registry
+    )
     with open(confName, "r") as stream:
         try:
             yamlConfig = yaml.safe_load(stream)
@@ -103,9 +115,15 @@ def get_config(confName: str):
         )
 
         mydict["mmpvx"] = np.asarray(yamlConfig["FOV"]["mm-per-voxel xyz"], dtype="d")
-        mydict["rotation"] = __parse_transformation_data(yamlConfig["relation"]["rotation"])
-        mydict["r shift"] = __parse_transformation_data(yamlConfig["relation"]["radial shift"])
-        mydict["t shift"] = __parse_transformation_data(yamlConfig["relation"]["tangential shift"])
+        mydict["rotation"] = __parse_transformation_data(
+            yamlConfig["relation"]["rotation"]
+        )
+        mydict["r shift"] = __parse_transformation_data(
+            yamlConfig["relation"]["radial shift"]
+        )
+        mydict["t shift"] = __parse_transformation_data(
+            yamlConfig["relation"]["tangential shift"]
+        )
         # mydict["relation"] = __parse_relation(
         #     yamlConfig["relation"]
         # )

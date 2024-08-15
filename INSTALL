@@ -1,0 +1,65 @@
+
+Get Started
+===========
+
+Core python package
+------------------------------
+
+- numpy >= 2.0.0
+- jsonschema
+- pyyaml >= 6.0.1
+
+Parallelization python package
+------------------------------
+
+- mpi4py
+
+File I/O python package
+-----------------------
+
+- h5py >= 3.4.0
+
+h5py must be built againt a parallel HDF5 library.
+``hdf5/1.14.1`` on CCR HPC node already has parallel support.
+
+Recommanded package installation on CCR HPC node
+------------------------------------------------
+
+This can be done in compile node. Just login in by ``ssh complile`` from the cluster login node.
+
+- Install ``numpy``, ``jsonschema``, ``pyyaml``, ``mpi4py``,``h5py`` as user python package
+
+pip cache purge
+
+pip install --user numpy jsonschema pyyaml mpi4py
+
+CC=mpicc HDF5_MPI="ON" HDF5_DIR=$(echo $(which h5copy) | awk 'BEGIN{FS=OFS="/"}{NF-=2; print}') pip install --user --no-binary=h5py --no-cache-dir h5py
+
+- Install ``pymatcal`` in virtual environment
+
+  - make virtual environment
+
+  cd pymatcal;python3 -m venv .venv --system-site-packages
+
+  source .venv/bin/activate
+
+  - Update setuptools first
+
+  pip install --upgrade setuptools
+
+  - Install pymatcal
+
+  git submodule update --init --recursive
+  pip install -e .
+
+Build documetation
+==================
+
+Required Python package
+-----------------------
+
+- sphinx
+- myst-parser
+- sphinx-design
+- sphinx-toolbox
+
