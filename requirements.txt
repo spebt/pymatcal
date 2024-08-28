@@ -1,4 +1,0 @@
-numpy
-pyyaml
-jsonchema
-mpi4py
