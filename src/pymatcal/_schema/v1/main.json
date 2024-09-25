@@ -1,0 +1,23 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$id": "/v1/main.json",
+    "title": "Pymatcal main schema",
+    "description": "SPEBT system response matrix generation package configuration file schema. The configuration file is a YAML file.",
+    "type": "object",
+    "properties": {
+        "detector": {
+            "$ref": "/v1/detector.json"
+        },
+        "FOV": {
+            "$ref": "/v1/FOV.json"
+        },
+        "relation": {
+            "$ref": "/v1/relation.json"
+        }
+    },
+    "required": [
+        "detector",
+        "FOV",
+        "relation"
+    ]
+}

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 authors = [{ name = "Fang Han", email = "fhan0904@gmail.com" }]
-dependencies = ["numpy", "pyyaml", "jsonschema"]
+dependencies = ["numpy", "pyyaml", "jsonschema","referencing"]
 name = "pymatcal"
 dynamic = ["version"]
 description = "Python package for SPEBT system PPDF matrix analytical calculation"
@@ -25,8 +25,7 @@ Documentation = "https://spebt.github.io/pymatcal/"
 
 [tool.setuptools]
 include-package-data = true
-packages = ["pymatcal"]
-#[tool.setuptools.packages.find]
-#where = "."
-[tool.setuptools.package-data]
-"pymatcal._schema" = ["v1/*.json"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["pymatcal"]

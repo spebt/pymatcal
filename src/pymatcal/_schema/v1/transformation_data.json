@@ -1,0 +1,59 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$id": "/v1/transformation_data.json",
+    "title": "Pymatcal transformation data schema",
+    "description": "transformation data schema, used to define the transformation for the detector to FOV relation.",
+    "type": "object",
+    "properties": {
+        "format": {
+            "type": "string",
+            "enum": [
+                "list",
+                "range"
+            ]
+        },
+        "data": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 1
+        },
+        "start": {
+            "type": "number"
+        },
+        "step": {
+            "type": "number"
+        },
+        "N": {
+            "type": "number"
+        },
+        "properties": {
+            "if": {
+                "properties": {
+                    "format": {
+                        "const": "list"
+                    }
+                },
+                "required": [
+                    "format"
+                ]
+            },
+            "then": {
+                "required": [
+                    "data"
+                ]
+            },
+            "else": {
+                "required": [
+                    "start",
+                    "step",
+                    "N"
+                ]
+            }
+        }
+    },
+    "required": [
+        "format"
+    ]
+}

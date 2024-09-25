@@ -1,0 +1,38 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "$id": "/v1/FOV.json",
+    "title": "FOV schema",
+    "description": "FOV section of the YAML configuration file schema.",
+    "type": "object",
+    "properties": {
+        "N voxels xyz": {
+            "type": "array",
+            "items": {
+                "type": "integer"
+            },
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "mm per voxel xyz": { 
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "N subdivision xyz": {
+            "type": "array",
+            "items": {
+                "type": "integer"
+            },
+            "minItems": 3,
+            "maxItems": 3
+        }
+    },
+    "required": [
+        "N voxels xyz",
+        "mm per voxel xyz",
+        "N subdivision xyz"
+    ]
+}
