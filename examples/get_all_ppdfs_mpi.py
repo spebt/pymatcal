@@ -13,7 +13,7 @@ nprocs = comm.Get_size()
 
 configFname = sys.argv[1]
 config = pymatcal.get_config(configFname)
-outFname = re.match("^(.+).yml", configFname).group(1) + ".hdf5"
+outFname = re.match("^(.+).yaml", configFname).group(1) + ".hdf5"
 
 Nfov = np.prod(config["fov nvx"])
 Ndet = config["active dets"].shape[0]

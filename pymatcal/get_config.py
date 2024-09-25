@@ -103,18 +103,18 @@ def get_config(confName: str):
         mydict["active indices"] = indices
         mydict["active dets"] = np.array(active_dets)
         mydict["det nsub"] = np.asarray(
-            yamlConfig["detector"]["N-subdivision xyz"], dtype=np.int32
+            yamlConfig["detector"]["N subdivision xyz"], dtype=np.int32
         )
 
         mydict["fov nsub"] = np.asarray(
-            yamlConfig["FOV"]["N-subdivision xyz"], dtype=np.int32
+            yamlConfig["FOV"]["N subdivision xyz"], dtype=np.int32
         )
 
         mydict["fov nvx"] = np.asarray(
-            yamlConfig["FOV"]["N-voxels xyz"], dtype=np.int32
+            yamlConfig["FOV"]["N voxels xyz"], dtype=np.int32
         )
 
-        mydict["mmpvx"] = np.asarray(yamlConfig["FOV"]["mm-per-voxel xyz"], dtype="d")
+        mydict["mmpvx"] = np.asarray(yamlConfig["FOV"]["mm per voxel xyz"], dtype="d")
         mydict["rotation"] = __parse_transformation_data(
             yamlConfig["relation"]["rotation"]
         )

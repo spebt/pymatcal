@@ -168,3 +168,9 @@ cython_debug/
 # *.png
 test/*.png
 examples/.virtual_documents
+examples/panel_0.yaml
+examples/panel_1.yaml
+examples/panel_2.yaml
+examples/panel_3.yaml
+examples/panel_4.yaml
+examples/panel_5.yaml
