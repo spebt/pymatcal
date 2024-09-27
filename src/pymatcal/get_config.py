@@ -1,9 +1,10 @@
-import yaml
-import numpy as np
-from jsonschema import Draft7Validator
-from ._utils import set_module
-
 import sys
+
+import numpy as np
+import yaml
+from jsonschema import Draft7Validator
+
+from ._utils import set_module
 
 if sys.version_info < (3, 10):
     from importlib_resources import files as _files
@@ -11,6 +12,7 @@ else:
     from importlib.resources import files as _files
 
 import json as _json
+
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT7
 
@@ -53,10 +55,9 @@ def __get_schema_registry():
 
     schema_registry = Registry()
     for _basename in _basenames:
+        fPath = _schema_dir.joinpath(_schema_version, f"{_basename}.json")
         loaded = Resource(
-            contents=_json.load(
-                open(f"{str(_schema_dir)}/{str(_schema_version)}/{_basename}.json", "r")
-            ),
+            contents=_json.load(fPath.open("r")),
             specification=DRAFT7,
         )
 
