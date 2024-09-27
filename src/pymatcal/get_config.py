@@ -1,7 +1,6 @@
 import yaml
 import numpy as np
 from jsonschema import Draft7Validator
-import re
 from ._utils import set_module
 
 import sys
@@ -22,19 +21,19 @@ __all__ = ["get_config", "get_fov_voxel_center", "get_procIds"]
 
 
 @set_module("pymatcal")
-def __parse_transformation_data(idata: dict) -> dict:
+def __parse_transformation_data(idata: dict) -> np.ndarray:
     if idata["format"] == "range":
         try:
             start = float(idata["start"])
             ns = int(idata["N"])
             step = float(idata["step"])
-        except:
+        except Exception:
             raise SyntaxError("Invalid transformation range data!!")
         return start + np.arange(0, ns) * step
     elif idata["format"] == "list":
         try:
             iarr = np.array(idata["data"], dtype="d")
-        except:
+        except Exception:
             raise SyntaxError("Invalid transformation data enumerated")
         if len(iarr) == 0:
             raise SyntaxError(
@@ -56,7 +55,7 @@ def __get_schema_registry():
     for _basename in _basenames:
         loaded = Resource(
             contents=_json.load(
-                open(_schema_dir / _schema_version / f"{_basename}.json", "r")
+                open(f"{str(_schema_dir)}/{str(_schema_version)}/{_basename}.json", "r")
             ),
             specification=DRAFT7,
         )
@@ -86,7 +85,7 @@ def get_config(confName: str):
             validator.validate(instance=yamlConfig)
         except Exception as err:
             print("Error:", "Failed validating configuration file!!")
-            print("Error Messages:\n%s" % err.message)
+            print("Error Messages:\n%s" % err.__str__)
             raise
     mydict = {}
     try:
@@ -161,7 +160,7 @@ def get_fov_voxel_center(
     return (np.array([xid, yid, zid]) - np.append(nvx[:2], 0) * 0.5) * mmpvx
 
 
-def get_procIds(ntasks: np.uint64, nprocs: np.uint64) -> np.ndarray:
+def get_procIds(ntasks: np.uint64, nprocs: int) -> np.ndarray:
     """
     Calculate the indices of tasks assigned to each process.
 

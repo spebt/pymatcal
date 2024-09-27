@@ -40,16 +40,9 @@ if rank == 0:
     print("{:30s}{:,}".format("N total tasks:", ntasks))
     print("{:30s}{:,}\n".format("N Process:", nprocs))
 
+
 for idx in range(procTaskIds[0, rank], procTaskIds[1, rank]):
     dset[idmap[idx, 0], idmap[idx, 1], idmap[idx, 2], idmap[idx, 3], idmap[idx, 4]] = (
-        pymatcal.get_pair_ppdf(
-            idmap[idx, 4],
-            idmap[idx, 3],
-            idmap[idx, 2],
-            idmap[idx, 1],
-            idmap[idx, 0],
-            fov_subdivs,
-            config,
-        )
+        idx
     )
 f.close()
