@@ -6,6 +6,9 @@ import numpy as np
 import pymatcal
 from mpi4py import MPI
 
+
+time_start=MPI.Wtime()
+
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 nprocs = comm.Get_size()
@@ -18,7 +21,9 @@ if match is not None:
 else:
     raise ValueError("Invalid config file name")
 
+
 f = h5py.File(outFname, "w", driver="mpio", comm=MPI.COMM_WORLD)
+
 
 Nfov = np.prod(config["fov nvx"])
 Ndet = config["active dets"].shape[0]
@@ -39,6 +44,7 @@ if rank == 0:
     print("Configurations:")
     print("{:30s}{:,}".format("N total tasks:", ntasks))
     print("{:30s}{:,}\n".format("N Process:", nprocs))
+    sys.stdout.flush()
 
 for idx in range(procTaskIds[0, rank], procTaskIds[1, rank]):
     dset[idmap[idx, 0], idmap[idx, 1], idmap[idx, 2], idmap[idx, 3], idmap[idx, 4]] = (
@@ -53,3 +59,5 @@ for idx in range(procTaskIds[0, rank], procTaskIds[1, rank]):
         )
     )
 f.close()
+time_end = MPI.Wtime()
+print("Rank:",rank,"elapsed time:",str(time_end - time_start))
