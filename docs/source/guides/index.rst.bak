@@ -5,12 +5,13 @@ Tutorial
    https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
    documentation for details.
 
-.. postlist::
-   :list-style: circle
-   :category: tutorial
-   :date: %Y-%m-%d
-   :format: {title}  Last updated on {date}
-   :sort:
+
+.. toctree::
+   :glob:
+   :maxdepth: 1
+
+   *
+
 
 
 
