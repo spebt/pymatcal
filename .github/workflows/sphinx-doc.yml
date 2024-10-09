@@ -3,7 +3,7 @@ name: sphinx-doc
 on:
   push:
     branches:
-      - main  # Set a branch name to trigger deployment
+      - main # Set a branch name to trigger deployment
   pull_request:
 
 jobs:
@@ -12,20 +12,20 @@ jobs:
     permissions:
       contents: write
     concurrency:
-        group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-          cache: 'pip' # caching pip dependencies
+          python-version: "3.12"
+          cache: "pip" # caching pip dependencies
 
-      - name: Setup Python dependencies  
-        run: pip install jsonschema sphinx numpy myst-parser pyyaml pydata-sphinx-theme sphinx-design sphinx-copybutton
+      - name: Setup Python dependencies
+        run: pip install jsonschema sphinx numpy myst-parser pyyaml pydata-sphinx-theme sphinx-design sphinx-copybutton ablog
       - name: Install pymatcal
         run: pip install -e .
-      
+
       - name: Sphinx build
         run: |
           cd docs
