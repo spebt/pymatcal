@@ -1,11 +1,13 @@
+:html_theme.sidebar_secondary.remove:
+
 .. pymatcal documentation master file, created by
    sphinx-quickstart on Wed Jul 17 13:48:51 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-============
-Introduction
-============
+========
+PyMatCal
+========
 .. Add your content using ``reStructuredText`` syntax. See the reStructuredText
    https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html
    documentation for details.
@@ -15,11 +17,10 @@ Introduction
    :maxdepth: 2
    :caption: Table of Contents:
 
-   self
-   Quick Start <quickstart.rst>
-   Guides <guides/index.rst>
+   PyMatCal <self>
+   INSTALL <INSTALL.rst>
+   Tutorial <guides/index.rst>
    API Reference <api-ref.md>
-
 
 **pymatcal** is a Python implementation of the ray-tracing-based analytical calculation of system response matrix of a single photon emission tomography system. 
 
@@ -48,9 +49,6 @@ The following image shows the PPDFs of a single pinhole detector unit. The detec
    :alt: singe-pinhole-1-detetor-unit
    :width: 1024px
    :align: center
-
-.. include:: ./include/deps.md
-   :parser: myst_parser.sphinx_
 
 
 
