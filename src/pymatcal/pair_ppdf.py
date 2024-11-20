@@ -184,3 +184,92 @@ def get_pair_ppdf_binary(
     idx_attenu = ret["ts"][:, :, 1] != 1
     segs_attenu = numpy.where(idx_attenu, ret["intersections"], 0)
     return 0 if numpy.any(numpy.sum(segs_attenu, axis=0) == 0) else 1
+
+"""
+@set_module("pymatcal")
+def get_pair_ppdf(
+    ida_array: np.ndarray,  # Array of FOV voxel IDs
+    idb: np.uint64,         # Single detector ID
+    idrot: int,
+    idr: int,
+    idt: int,
+    fov_subdivs: dict,
+    config: dict
+) -> np.ndarray:
+    
+    Calculate the pair projection probability density function (PPDF) for a single detector unit
+    and multiple FOV voxels.
+
+    :param ida_array: An array of FOV voxel IDs.
+    :type ida_array: np.ndarray
+    :param idb: The ID of the detector unit.
+    :type idb: np.uint64
+    :param idrot: The ID of the rotation.
+    :type idrot: int
+    :param idr: The ID of the r-shift.
+    :type idr: int
+    :param idt: The ID of the t-shift.
+    :type idt: int
+    :param fov_subdivs: A dictionary containing subdivisions of the image.
+    :type fov_subdivs: dict
+    :param config: A dictionary containing configuration parameters.
+    :type config: dict
+    :return: An array of PPDF values corresponding to each FOV voxel in ida_array.
+    :rtype: np.ndarray
+    
+
+    # Get dimensions related to detectors from configuration
+    det_dimy = np.max(config["det geoms"][:, 3]) - np.min(config["det geoms"][:, 2])
+
+    # Get centers for all FOV voxels in ida_array
+    pointA_array = np.array([get_fov_voxel_center(ida, config["fov nvx"], config["mmpvx"]) for ida in ida_array])
+
+    # Get geometry for this specific detector unit (idb)
+    geomB = config["active dets"][idb]
+    
+    # Get subdivisions for this detector unit
+    det_subdivs = get_det_subdivs(geomB, config["det nsub"])
+    
+    # Append subdivisions to detector geometry and get centroids (pBs)
+    geoms = append_subdivs(config["det geoms"], geomB, det_subdivs["geoms"])
+    
+    pBs = get_centroids(det_subdivs["geoms"])
+
+    # Apply transformation based on rotation, r-shift, and t-shift
+    angle = config["rotation"][idrot]
+    rshift = config["r shift"][idr]
+    tshift = config["t shift"][idt]
+
+    # Transform coordinates for all FOV voxels in pointA_array
+    pAs_array = coord_transform(
+        get_mtransform(angle, -rshift, det_dimy * 0.5 - tshift),
+        fov_subdivs["coords"] + pointA_array[:, None]  # Broadcasting over all points
+    )
+
+    # Initialize an empty list to store PPDF results for each FOV voxel
+    ppdf_results = []
+
+    # Loop over each transformed set of points (one per FOV voxel)
+    for pAs in pAs_array:
+        abpairs = get_AB_pairs(pAs, pBs)
+        ret = get_intersections_2d(geoms, abpairs)
+
+        idx_absorp = ret["ts"][:, :, 1] == 1
+        idx_attenu = ret["ts"][:, :, 1] != 1
+
+        segs_absorp = np.where(idx_absorp, ret["intersections"], 0)
+        segs_attenu = np.where(idx_attenu, ret["intersections"], 0)
+
+        subdivs_sa = get_solid_angles(abpairs, det_subdivs["incs"])
+
+        term_attenu = np.exp(-np.sum(segs_attenu.T * geoms[:, 7], axis=1))
+        term_absorp = 1 - np.exp(-np.sum(segs_absorp.T * geoms[:, 7], axis=1))
+        term_solida = subdivs_sa / (4 * np.pi)
+
+        ab_rays_ppd = term_attenu * term_absorp * term_solida
+
+        # Sum up PPDF values for this particular FOV voxel and store it in results list
+        ppdf_results.append(np.sum(ab_rays_ppd) / np.prod(config["fov nsub"]))
+
+    return np.array(ppdf_results)  # Return as a NumPy array
+"""

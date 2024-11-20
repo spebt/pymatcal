@@ -3,9 +3,32 @@ from ._utils import set_module
 
 __all__ = ["get_AB_pairs", "get_intersects_2d", "get_intersections_2d"]
 
+
+@set_module('pymatcal')
+def get_AB_pairs(pAs: np.ndarray, pBs: np.ndarray):
+    """Batch version of get_AB_pairs"""
+    # pAs shape: (n_fov, 3)
+    # pBs shape: (n_det, 3)
+    n_fov, n_det = len(pAs), len(pBs)
+    
+    # Using broadcasting to create pairs
+    pAs_expanded = pAs[:, np.newaxis, :]  # (n_fov, 1, 3)
+    pBs_expanded = pBs[np.newaxis, :, :]  # (1, n_det, 3)
+    
+    # Create pairs using broadcasting
+    pairs = np.concatenate([
+        np.broadcast_to(pAs_expanded, (n_fov, n_det, 3)),
+        np.broadcast_to(pBs_expanded, (n_fov, n_det, 3))
+    ], axis=2)
+    
+    return pairs.reshape(-1, 6)
+
+
+
+"""
 @set_module('pymatcal')
 def get_AB_pairs(pAs, pBs):
-    """
+    
     Generate pairs of points from two arrays of points.
 
     :param pAs: Array of points A.
@@ -14,10 +37,10 @@ def get_AB_pairs(pAs, pBs):
     :type pBs: numpy.ndarray
     :return: Array of pairs of points, where each row contains the coordinates of a pair (Ax, Ay, Az, Bx, By, Bz).
     :rtype: numpy.ndarray
-    """
+    
     na, nb = (len(pAs), len(pBs))
     return np.concatenate((np.repeat(pAs, nb, axis=0), np.tile(pBs, (na, 1))), axis=1)
-
+"""
 
 @set_module('pymatcal')
 def findt_2d(geom, abpairs):
@@ -108,7 +131,24 @@ def get_intersects_2d(geoms: np.ndarray, abpairs: np.ndarray) -> np.ndarray:
 
 @set_module('pymatcal')
 def get_intersections_2d(geoms: np.ndarray, abpairs: np.ndarray):
-    """
+    """Batch version of intersection calculation"""
+    ab_vec = abpairs[:, 3:] - abpairs[:, :3]
+    ab_length = np.linalg.norm(ab_vec, axis=1)
+    
+    # Vectorized computation of ts
+    ts = np.stack([findt_2d(geom, abpairs) for geom in geoms])
+    
+    return {
+        'intersections': ab_length.T * (ts[:, :, 1] - ts[:, :, 0]),
+        'ts': ts
+    }
+
+
+
+"""
+@set_module('pymatcal')
+def get_intersections_2d(geoms: np.ndarray, abpairs: np.ndarray):
+    
     Calculate the intersection length between a set of geometries and given set of rays in 2D.
 
     :param geoms: Array of geometries, where each geometry is represented as [x0, x1, y0, y1,z0, z1, sequence, mu].
@@ -119,9 +159,10 @@ def get_intersections_2d(geoms: np.ndarray, abpairs: np.ndarray):
         - 'intersections': Array of intersection points, where elements are intersection lengths.
         - 'ts': Array of t values, where each t value represents the parameterization of the intersection point along the rays.
     :rtype: dict
-    """
+    
     ab_vec = abpairs[:, 3:] - abpairs[:, 0:3]
     ab_length = np.linalg.norm(ab_vec, axis=1)
     ts = np.array([findt_2d(geom, abpairs) for geom in geoms])
     return {'intersections': ab_length.T * (ts[:, :, 1] - ts[:, :, 0]),
             'ts': ts}
+"""

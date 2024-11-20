@@ -45,10 +45,10 @@ def get_mtransform(angle_deg: float, tx, ty) -> tuple[np.ndarray,np.ndarray]:
 
 
 # M(x+M_inv*a)=Mx+a
-
+"""
 @set_module('pymatcal')
 def coord_transform(m: tuple[np.ndarray], input: np.ndarray):
-    """
+    
     Apply coordinate transformation to the input array.
 
     :param m: A tuple containing two numpy arrays representing the transformation matrix.
@@ -57,5 +57,12 @@ def coord_transform(m: tuple[np.ndarray], input: np.ndarray):
     :type input: numpy.ndarray
     :return: The transformed array.
     :rtype: numpy.ndarray
-    """
+    
     return np.matmul(input, m[0]) + m[1]
+"""
+
+@set_module('pymatcal')
+def coord_transform(m: tuple[np.ndarray], inputs: np.ndarray):
+    """Batch version of coordinate transformation"""
+    # inputs shape: (batch_size, n_points, 3)
+    return np.einsum('ijk,lk->ijl', inputs, m[0]) + m[1]

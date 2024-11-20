@@ -135,9 +135,27 @@ def get_config(confName: str):
 
 @set_module("pymatcal")
 def get_fov_voxel_center(
+    ids: np.ndarray, nvx: np.ndarray, mmpvx: np.ndarray
+) -> np.ndarray:
+    """Vectorized version to calculate multiple voxel centers simultaneously"""
+    assert np.all(ids < np.prod(nvx)), "Invalid voxel indices!"
+    
+    zids = ids // (nvx[0] * nvx[1])
+    xyids = ids % (nvx[0] * nvx[1])
+    yids = xyids // nvx[0]
+    xids = xyids % nvx[0]
+    
+    coords = np.column_stack((xids, yids, zids))
+    return (coords - np.append(nvx[:2], 0) * 0.5) * mmpvx
+
+
+
+'''
+@set_module("pymatcal")
+def get_fov_voxel_center(
     id: np.uint64, nvx: np.ndarray, mmpvx: np.ndarray
 ) -> np.ndarray:
-    """
+    
     Calculate the center coordinates of a voxel given its index.
 
     :param id: The index of the voxel.
@@ -149,7 +167,7 @@ def get_fov_voxel_center(
     :return: The center coordinates of the voxel.
     :rtype: np.ndarray
     :raises AssertionError: If the given voxel index is invalid.
-    """
+    
     # make sure the 1-D index given is valid
     assert id < np.prod(nvx), "Invalid voxel index!"
     # index order, slowest to quickest changing: z -> y -> x
@@ -159,7 +177,7 @@ def get_fov_voxel_center(
     xid = xyid % nvx[0]
     # print('z -> y -> x:', '%d -> %d -> %d'%(zid, yid, xid))
     return (np.array([xid, yid, zid]) - np.append(nvx[:2], 0) * 0.5) * mmpvx
-
+'''
 
 def get_procIds(ntasks: np.uint64, nprocs: int) -> np.ndarray:
     """
