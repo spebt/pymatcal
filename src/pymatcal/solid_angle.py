@@ -5,7 +5,22 @@ __all__ = ["get_solid_angles", "get_norm_areas"]
 
 @set_module('pymatcal')
 def get_solid_angles(abpairs: np.ndarray, incs: np.ndarray) -> np.ndarray:
-    """
+    """Batch version of solid angle calculation"""
+    subAreas = np.array([incs[1] * incs[2], incs[2] * incs[0], incs[0] * incs[1]])
+    
+    # Reshape for batch processing
+    ab_vec = abpairs[..., 3:] - abpairs[..., :3]
+    ab_lens = np.linalg.norm(ab_vec, axis=-1, keepdims=True)
+    
+    # Vectorized computation
+    norm_areas = np.abs(ab_vec * subAreas) / ab_lens
+    return np.sum(norm_areas / (ab_lens**2), axis=-1)
+
+
+"""
+@set_module('pymatcal')
+def get_solid_angles(abpairs: np.ndarray, incs: np.ndarray) -> np.ndarray:
+    
     Calculate the solid angles of the detector units subdivisions, B, to the given set of FOV voxel subdivision centroids, A.
 
     :param abpairs: An array of shape (M x N, 6) containing the coordinates of FOV voxel subdivision centroids and detector unit subdivison centroids.
@@ -14,12 +29,15 @@ def get_solid_angles(abpairs: np.ndarray, incs: np.ndarray) -> np.ndarray:
     :type incs: numpy.ndarray
     :return: An array of shape (M x N,) containing the solid angles of the AB pairs.
     :rtype: np.ndarray
-    """
+    
     subAreas = np.array([incs[1] * incs[2], incs[2] * incs[0], incs[0] * incs[1]])
     ab_vec = abpairs[:, 3:] - abpairs[:, 0:3]
     ab_lens = np.linalg.norm(ab_vec, axis=1)
     norm_areas = np.abs(ab_vec * subAreas).T / ab_lens
     return np.sum(norm_areas / (ab_lens**2), axis=0)
+"""
+
+
 
 @set_module('pymatcal')
 def get_norm_areas(abpairs: np.ndarray, incs: np.ndarray) -> np.ndarray:
