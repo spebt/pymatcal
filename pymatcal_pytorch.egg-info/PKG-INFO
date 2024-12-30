@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: pymatcal-pytorch
+Version: 0.1.0
+Summary: A Python package for PyTorch-based computations and ray tracing.
+Home-page: https://github.com/spebt/pymatcal-pytorch
+Author: Fang Han
+Author-email: fanghan@buffalo.edu
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+
+# PyTorch-based system matrix calculation package
+
+- Run on the HPC cluster through SLURM
+- `sbatch sysmat_torch_h5py_ompi_prod.sh`
+> [!TIP]
+> FOV size is set in `pytorch_ppdf.py`
+> - It can be easily set to read from the `YAML` file.

@@ -1,0 +1,5 @@
+include README.md
+include pymatcal-pytorch/*.yaml
+include pymatcal-pytorch/*.npz
+include pymatcal-pytorch/*.png
+
