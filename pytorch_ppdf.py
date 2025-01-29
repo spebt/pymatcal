@@ -26,12 +26,9 @@ geoms = torch.tensor(
 rshift = 93.0
 
 n_panels = 6
-i_rot = int(sys.argv[1])
-fname = f"detector_cuboids_{i_rot:02d}.npz"
-
-
-
-outfname = f"system_matrix_{i_rot:02d}.hdf5"
+i_trans = int(sys.argv[1])
+fname = f"detector_cuboids_{i_trans:03d}.npz"
+outfname = f"system_matrix_{i_trans:03d}.hdf5"
 (
     plate_cuboids,
     crystal_cuboids,
