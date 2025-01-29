@@ -15,11 +15,7 @@ config = yaml.safe_load(open("shifted_layer_3x3_114x114.yaml"))
 geoms = torch.tensor(
     config["detector"]["detector geometry"], device=compute_device, dtype=torch.float32
 )
-rshift = torch.tensor(
-    config["relation"]["radial shift"]["data"][0],
-    device=compute_device,
-    dtype=torch.float32,
-)
+
 rshift = 93.0
 
 plate_geoms = geoms[geoms[:, 6] == 0]

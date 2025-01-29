@@ -4,3 +4,4 @@ __pycache__/
 *.pyo
 *.pyd
 *.log
+pymatcal_pytorch/tests/system_configs.hdf5
