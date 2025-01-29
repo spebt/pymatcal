@@ -27,12 +27,14 @@ rshift = 93.0
 
 n_panels = 6
 i_trans = int(sys.argv[1])
-fname = f"detector_cuboids_{i_trans:03d}.npz"
+
+scanner_cuboids_data_fname = f"scanner_cuboids_{i_trans:03d}.npz"
+scanner_cuboids_data_dir = "scanner_cuboids_data"
 outfname = f"system_matrix_{i_trans:03d}.hdf5"
 (
     plate_cuboids,
     crystal_cuboids,
-) = read_cuboids(fname)
+) = read_cuboids(scanner_cuboids_data_dir + "/" + scanner_cuboids_data_fname)
 
 all_crystal_cuboids = crystal_cuboids.view(-1, 4, 3)
 

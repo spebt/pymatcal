@@ -95,7 +95,7 @@ with progress_bar:
         datadir = "scanner_cuboids_data"
         os.makedirs(datadir, exist_ok=True)
         np.savez_compressed(
-            f"{datadir:s}/detector_cuboids_{itrans:03d}.npz", **output, dtype=np.float32
+            f"{datadir:s}/scanner_cuboids_{itrans:03d}.npz", **output, dtype=np.float32
         )
         del (
             plate_cuboids_rots_xyz,
