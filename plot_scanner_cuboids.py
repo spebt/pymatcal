@@ -74,7 +74,7 @@ if __name__ == "__main__":
             # deg = irot * 2.5
             # scanned_fov_centers.append([trans_xy[0], trans_xy[1]])
             datadir = "scanner_cuboids_data"
-            datafname = f"{datadir:s}/detector_cuboids_{itrans:03d}.npz"
+            datafname = f"{datadir:s}/scanner_cuboids_{itrans:03d}.npz"
             plate_cuboids, xtal_cuboids = read_cuboids(datafname)
             xtal_rects, plate_rects = get_mpl_rects(xtal_cuboids, plate_cuboids)
             ax.add_collection(PatchCollection(xtal_rects, fc="orange"))
