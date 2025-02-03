@@ -72,7 +72,6 @@ def get_rays(
     pb_arr_expanded = pb_arr.to(device).unsqueeze(0).expand((npa, -1, -1))
     return torch.stack((pa_arr_expanded, pb_arr_expanded), dim=2)
 
-
 def raytrace_torch(
     pAs: torch.Tensor, pBs: torch.Tensor, cuboids: torch.Tensor, device: torch.device
 ) -> torch.Tensor:
