@@ -1,5 +1,5 @@
 #!/bin/bash -l
-# ===============================================    
+# ===============================================
 # UB HPC general-compute partition
 # ===============================================
 
@@ -30,10 +30,16 @@
 #SBATCH --cluster=ub-hpc
 
 # load modules
-module load gcc/11.2.0 openmpi/4.1.1 pytorch/1.13.1-CUDA-11.8.0 h5py/3.6.0
+# module load gcc/11.2.0 openmpi/4.1.1 pytorch/1.13.1-CUDA-11.8.0 h5py/3.6.0
 
 # Echo number of nodes
 echo "Number of nodes allocated:" "$SLURM_JOB_NUM_NODES"
 
+# Make the directory for the output
+mkdir -p system_matrix_data
+
 # Run the code
-srun --mpi=pmi2 --exclusive --verbose python pytorch_ppdf.py
+for i in $(seq 0 599); do
+  echo "Generating matirx $i"
+  srun --mpi=pmi2 --exclusive --verbose python pytorch_ppdf.py "$i"
+done

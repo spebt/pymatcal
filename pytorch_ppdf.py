@@ -30,6 +30,7 @@ i_trans = int(sys.argv[1])
 
 scanner_cuboids_data_fname = f"scanner_cuboids_{i_trans:03d}.npz"
 scanner_cuboids_data_dir = "scanner_cuboids_data"
+outdir = "system_matrix_data"
 outfname = f"system_matrix_{i_trans:03d}.hdf5"
 (
     plate_cuboids,
@@ -66,7 +67,7 @@ n_pBs = pBs.shape[0]
 
 n_cuboids = cuboids.shape[0]
 f = h5py.File(
-    outfname,
+    outdir + "/" + outfname,
     "w",
     driver="mpio",
     comm=MPI.COMM_WORLD,
@@ -145,7 +146,7 @@ partial_matrix = torch.movedim(
         * solid_angels
         / 4
         / np.pi
-    ).view(fov_n_voxels_xyz[0], fov_n_voxels_xyz[1], n_crystal_per_rank),
+    ).view(int(fov_n_voxels_xyz[0]), int(fov_n_voxels_xyz[1]), n_crystal_per_rank),
     2,
     0,
 )

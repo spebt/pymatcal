@@ -44,8 +44,8 @@ progress_bar = Progress(
 task_1 = progress_bar.add_task("Processing", total=transform_vectors.shape[0])
 with progress_bar:
     for itrans, vtrans in enumerate(transform_vectors):
-        if itrans > 27:
-            continue
+        # if itrans > 27:
+        #     continue
         #     print(vtrans[0].float() * 180 / np.pi, vtrans[1], vtrans[2])
         rot = vtrans[0].float()
         plate_cuboids_rots_xyz = torch.arange(
@@ -54,9 +54,7 @@ with progress_bar:
             [0, 0, panel_interval_rad],
             device=compute_device,
             dtype=torch.float32,
-        ) + torch.tensor(
-            [0, 0, rot], device=compute_device, dtype=torch.float32
-        )
+        ) + torch.tensor([0, 0, rot], device=compute_device, dtype=torch.float32)
         plate_cuboids_centers_xyz, plate_cuboids_vectors_xyz = get_cuboids(
             plate_geoms, plate_cuboids_rots_xyz, rshift, compute_device
         )
@@ -73,9 +71,7 @@ with progress_bar:
             1, detector_geoms.shape[0], 3
         ) * torch.tensor(
             [0, 0, panel_interval_rad], device=compute_device, dtype=torch.float32
-        ) + torch.tensor(
-            [0, 0, rot], device=compute_device, dtype=torch.float32
-        )
+        ) + torch.tensor([0, 0, rot], device=compute_device, dtype=torch.float32)
 
         detector_cuboids_centers_xyz, detector_cuboids_vectors_xyz = get_cuboids(
             detector_geoms, detector_cuboids_rots_xyz, rshift, compute_device
