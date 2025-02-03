@@ -4,14 +4,14 @@
 # ===============================================
 
 #  Request number of tasks and CPUs per task
-#SBATCH -n108
+#SBATCH -n216
 #SBATCH --cpus-per-task=4
 
 #  Nodes constraint, nodes with Intel Infiniband
 #SBATCH --constraint="[SAPPHIRE-RAPIDS-IB|ICE-LAKE-IB|CASCADE-LAKE-IB]"
 
 #  Request memory per CPU
-#SBATCH --mem-per-cpu=4G
+#SBATCH --mem-per-cpu=8G
 
 #   Give your job a name, so you can recognize it in the queue
 #SBATCH --job-name="torch-sysmat"
