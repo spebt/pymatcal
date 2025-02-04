@@ -30,7 +30,7 @@
 #SBATCH --cluster=ub-hpc
 
 # load modules
-# module load gcc/11.2.0 openmpi/4.1.1 pytorch/1.13.1-CUDA-11.8.0 h5py/3.6.0
+module load gcc/11.2.0 openmpi/4.1.1 pytorch/1.13.1-CUDA-11.8.0 h5py/3.6.0
 
 # Echo number of nodes
 echo "Number of nodes allocated:" "$SLURM_JOB_NUM_NODES"
