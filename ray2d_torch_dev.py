@@ -250,7 +250,7 @@ if __name__ == "__main__":
     ax.plot(pb_arr[0], pb_arr[1], "o", ms=1, color="b")
     ax.plot(pa_arr.view(-1, 2)[:, 0], pa_arr.view(-1, 2)[:, 1], "o", ms=2, c="r")
     lines = rays.view(-1, 2, 2).numpy()
-    lines_segs = LineCollection(lines, colors="darkcyan", linewidths=1)
+    lines_segs = LineCollection(lines, colors="darkcyan", linewidths=1,ls='-')
     ax.add_collection(lines_segs)
     ax.plot(cuts_other[:, 0], cuts_other[:, 1], "o", ms=2, c="blue")
     ax.plot(cuts_self[:, 0], cuts_self[:, 1], "o", ms=2, c="green")

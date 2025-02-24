@@ -2,3 +2,4 @@ __pycache__/
 *_data/
 *data/
 images/
+.ipynb_checkpoints
