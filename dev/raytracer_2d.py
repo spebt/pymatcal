@@ -78,6 +78,7 @@ def plot_rects(rects, ax, **kwargs):
         [Polygon(vert, closed=True) for vert in verts], **kwargs
     )
     ax.add_collection(p)
+    return p
 
 
 def get_angular_term(rays, rects):
@@ -122,15 +123,16 @@ def get_rect_subdivs(rect, nsubs):
         dim=1,
     )
 
+
 # def plot_rays_2d(ax, rays, **kwargs):
 #         lines_segs = LineCollection(
 #         rays[:, i].view(-1, 2, 2).tolist(), colors="cyan", linewidths=1, ls="-"
 #     )
 #     ax.add_collection(lines_segs)
-    
+
 # def plot_fov_2d(ax, fov_pixel_centers, fov_dims,**kwargs):
 #     hull = get_convex_hull_2d(get_verts_sorted_2d(get_fov_verts_2d(fov_dims)))
-       
+
 #     fov_frame = ax.add_patch(
 #         Polygon(hull, closed=True, fill=False, edgecolor="purple")
 #     )
@@ -142,7 +144,7 @@ def plot_scanner_2d(ax, rect_tensors, rays, pstyles: list):
     for id, rect_tensor in enumerate(rect_tensors):
         patch = mpatches.Patch(**pstyles[id])
         legend_handles.append(patch)
-        plot_rects(rect_tensor, ax, **pstyles[id])
+        _ = plot_rects(rect_tensor, ax, **pstyles[id])
     ax.set_aspect("equal")
     pa_arr = rays[:, 0, 0]
     pb_arr = rays[0, :, 1]
@@ -179,6 +181,18 @@ def get_verts_sorted_2d(vertices: torch.Tensor):
     return torch.vstack((p, vertices))
 
 
+def get_verts_sorted_by_angel_2d(
+    vertices: torch.Tensor, ref_point: torch.Tensor
+):
+    # sort the vertices by angle to point ref_point
+    rads = torch.atan2(
+        vertices[:, 1] - ref_point[1], vertices[:, 0] - ref_point[0]
+    )
+    rads = (rads + 2 * torch.pi) % (2 * torch.pi)
+    order = torch.argsort(rads)
+    return vertices[order], rads
+
+
 def get_three_p_cross(points):
     return (
         points[1, 0] * (points[2, 1] - points[0, 1])
@@ -192,30 +206,45 @@ def get_convex_hull_2d(points: torch.Tensor) -> torch.Tensor:
     convex_hull = points[:2]
     for i in range(2, points.shape[0]):
         convex_hull = torch.vstack((convex_hull, points[i]))
-        if convex_hull.shape[0] > 1 and get_three_p_cross(convex_hull[-3:]) < 0:
+        if (
+            convex_hull.shape[0] > 1
+            and get_three_p_cross(convex_hull[-3:]) <= 0
+        ):
             convex_hull = torch.vstack([convex_hull[:-2], convex_hull[-1]])
     return convex_hull
 
 
-def is_in_convex_polygon_2d(points, hull):
-    # get the cross product of the points
-    # cross = get_three_p_cross(torch.vstack((hull, points)))
-    n_points = points.shape[0]
+def if_rects_in_hull_2d(rects, hull):
+    points = get_rects_verts_2d(rects)
+    n_rects = rects.shape[0]
     n_hull = hull.shape[0]
     hull = get_verts_sorted_2d(hull)
-    p0_tensor = hull.unsqueeze(0).expand(n_points, n_hull, 2)
+    p0_tensor = hull.unsqueeze(0).unsqueeze(0).expand(n_rects, 4, n_hull, 2)
     p1_tensor = (
         torch.vstack([hull[1:], hull[0]])
         .unsqueeze(0)
-        .expand(n_points, n_hull, 2)
+        .unsqueeze(0)
+        .expand(n_rects, 4, n_hull, 2)
     )
-    p2_tensor = points.unsqueeze(1).expand(n_points, n_hull, 2)
+    p2_tensor = points.unsqueeze(2).expand(-1, -1, n_hull, 2)
     v1 = p1_tensor - p0_tensor
     v2 = p2_tensor - p0_tensor
     cross = torch.sign(
-        v2[:, :, 0] * v1[:, :, 1] - v2[:, :, 1] * v1[:, :, 0]
-    ).view(n_points, n_hull)
-    return torch.logical_or((cross > 0).all(dim=1), (cross < 0).all(dim=1))
+        v2[:, :, :, 0] * v1[:, :, :, 1] - v2[:, :, :, 1] * v1[:, :, :, 0]
+    ).view(n_rects, 4, n_hull)
+    return torch.logical_or((cross > 0).all(dim=2), (cross < 0).all(dim=2)).all(
+        dim=1
+    )
+
+
+def if_rects_intersect_hull_2d(rects, hull, sub_center):
+    # get the edges of the rectangles
+    edges = get_rects_edges_2d(rects)
+    index = torch.tensor([2, -2])
+    ends = get_verts_sorted_by_angel_2d(hull, sub_center)[index]
+    rays = get_rays_2d(ends, sub_center.view(1, 2))
+    _, index = get_cuts_ray_on_edges_2d(rays, edges)
+    return torch.unique(index[:, 1])
 
 
 def get_rays_cut_subdivs_self_2d(
