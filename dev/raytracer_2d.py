@@ -5,7 +5,11 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 import matplotlib.patches as mpatches
 import matplotlib.lines as mlines
-from matplotlib.collections import PatchCollection, LineCollection
+from matplotlib.collections import (
+    PatchCollection,
+    LineCollection,
+    PolyCollection,
+)
 
 
 def get_rects_verts_2d(rects):
@@ -74,9 +78,7 @@ def get_fov_pixel_centers_2d(
 
 def plot_rects(rects, ax, **kwargs):
     verts = get_rects_verts_2d(rects)
-    p = PatchCollection(
-        [Polygon(vert, closed=True) for vert in verts], **kwargs
-    )
+    p = PolyCollection(verts.tolist(), **kwargs)
     ax.add_collection(p)
     return p
 
@@ -166,31 +168,16 @@ def get_fov_verts_2d(fov_dims):
     )
 
 
-def get_verts_sorted_2d(vertices: torch.Tensor):
-    # sort the vertices by x and y
-    indices = torch.arange(vertices.shape[0])
-    indices = indices[torch.argsort(vertices[indices, 0])]
-    indices = indices[torch.argsort(vertices[indices, 1])]
-    vertices = vertices[indices]
-    p = vertices[0]
-    # sort the vertices by angle to p
-    order = torch.argsort(
-        torch.atan2(vertices[1:, 1] - p[1], vertices[1:, 0] - p[0])
-    )
-    vertices = vertices[1:][order]
-    return torch.vstack((p, vertices))
-
-
 def get_verts_sorted_by_angel_2d(
     vertices: torch.Tensor, ref_point: torch.Tensor
-):
+) -> torch.Tensor:
     # sort the vertices by angle to point ref_point
     rads = torch.atan2(
         vertices[:, 1] - ref_point[1], vertices[:, 0] - ref_point[0]
     )
     rads = (rads + 2 * torch.pi) % (2 * torch.pi)
     order = torch.argsort(rads)
-    return vertices[order], rads
+    return vertices[order], rads[order]
 
 
 def get_three_p_cross(points):
@@ -201,8 +188,19 @@ def get_three_p_cross(points):
     )
 
 
+def get_verts_sorted_by_xy_2d(verts: torch.Tensor) -> torch.Tensor:
+    # sort the vertices by x
+    verts = verts[torch.argsort(verts[:, 0])]
+    # sort the vertices again by y if x is the same
+    return verts[torch.argsort(verts[:, 1])]
+
+
 def get_convex_hull_2d(points: torch.Tensor) -> torch.Tensor:
-    points = get_verts_sorted_2d(points)
+    # sort the points by x and y
+    points = get_verts_sorted_by_xy_2d(points)
+    # sort the points by angle reference to the first point
+    points = get_verts_sorted_by_angel_2d(points, points[0])[0]
+    # get the convex hull
     convex_hull = points[:2]
     for i in range(2, points.shape[0]):
         convex_hull = torch.vstack((convex_hull, points[i]))
@@ -218,7 +216,9 @@ def if_rects_in_hull_2d(rects, hull):
     points = get_rects_verts_2d(rects)
     n_rects = rects.shape[0]
     n_hull = hull.shape[0]
-    hull = get_verts_sorted_2d(hull)
+
+    # hull = get_verts_sorted_2d(hull)
+
     p0_tensor = hull.unsqueeze(0).unsqueeze(0).expand(n_rects, 4, n_hull, 2)
     p1_tensor = (
         torch.vstack([hull[1:], hull[0]])
@@ -232,19 +232,27 @@ def if_rects_in_hull_2d(rects, hull):
     cross = torch.sign(
         v2[:, :, :, 0] * v1[:, :, :, 1] - v2[:, :, :, 1] * v1[:, :, :, 0]
     ).view(n_rects, 4, n_hull)
-    return torch.logical_or((cross > 0).all(dim=2), (cross < 0).all(dim=2)).all(
-        dim=1
-    )
+    return torch.logical_or(
+        (cross >= 0).all(dim=2), (cross <= 0).all(dim=2)
+    ).all(dim=1)
 
 
 def if_rects_intersect_hull_2d(rects, hull, sub_center):
     # get the edges of the rectangles
     edges = get_rects_edges_2d(rects)
-    index = torch.tensor([2, -2])
-    ends = get_verts_sorted_by_angel_2d(hull, sub_center)[index]
+    verts, _ = get_verts_sorted_by_angel_2d(hull, sub_center)
+    ends = verts[[1, -1]]
+    # print(rads)
     rays = get_rays_2d(ends, sub_center.view(1, 2))
     _, index = get_cuts_ray_on_edges_2d(rays, edges)
     return torch.unique(index[:, 1])
+
+
+def get_furthest_corners(verts, n_corners: int = 4) -> torch.Tensor:
+    centroid = torch.mean(verts, dim=0)
+    dist_to_centroid = torch.norm(verts - centroid, dim=1)
+    order = torch.argsort(dist_to_centroid)
+    return verts[order[-n_corners:]].view(n_corners, 2)
 
 
 def get_rays_cut_subdivs_self_2d(
