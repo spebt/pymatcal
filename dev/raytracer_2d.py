@@ -170,7 +170,7 @@ def get_fov_verts_2d(fov_dims):
 
 def get_verts_sorted_by_angel_2d(
     vertices: torch.Tensor, ref_point: torch.Tensor
-) -> torch.Tensor:
+) -> tuple[torch.Tensor, torch.Tensor]:
     # sort the vertices by angle to point ref_point
     rads = torch.atan2(
         vertices[:, 1] - ref_point[1], vertices[:, 0] - ref_point[0]
