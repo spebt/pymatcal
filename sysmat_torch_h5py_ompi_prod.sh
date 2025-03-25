@@ -41,5 +41,5 @@ mkdir -p system_matrix_data
 # Run the code
 for i in $(seq 0 599); do
   echo "Generating matirx $i"
-  srun --mpi=pmi2 --exclusive --verbose python pytorch_ppdf.py "$i"
+  # srun --mpi=pmi2 --exclusive --verbose python pytorch_ppdf.py "$i"
 done

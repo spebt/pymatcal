@@ -1,15 +1,5 @@
 import torch
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon
-import matplotlib.patches as mpatches
-import matplotlib.lines as mlines
-from matplotlib.collections import (
-    PatchCollection,
-    LineCollection,
-    PolyCollection,
-)
 
 
 def get_verts_2d_from_cuboids(cuboids):
@@ -31,6 +21,35 @@ def get_verts_2d_from_cuboids(cuboids):
         ],
         dim=1,
     )
+
+
+def get_polygon_groups_from_csv(grp_names: list[str], csv_path: str):
+    df = pd.read_csv(csv_path)
+    for grp_name in grp_names:
+        grp_verts = df.loc[df["polygon group"] == grp_name]
+        grp_tensor = torch.empty(
+            grp_verts.shape[0] // 4, 4, 2, dtype=torch.float
+        )
+        # print(grp_verts["polygon id"].unique())
+        grp_tensor[
+            torch.tensor(grp_verts["polygon id"].values, dtype=torch.int),
+            torch.tensor(grp_verts["vertice id"].values, dtype=torch.int),
+            :,
+        ] = torch.tensor(grp_verts[["x", "y"]].values, dtype=torch.float)
+        yield grp_tensor
+
+
+def load_scanner_geometry_csv(csv_path: str):
+    # Get the plate polygons from the CSV file
+    group_names = ["plate_{}".format(i) for i in range(6)]
+    plate_polygon_tensor = torch.cat(
+        list(get_polygon_groups_from_csv(group_names, csv_path))
+    )
+    group_names = ["crystals_{}".format(i) for i in range(6)]
+    xtal_polygon_tensor = torch.cat(
+        list(get_polygon_groups_from_csv(group_names, csv_path))
+    )
+    return plate_polygon_tensor, xtal_polygon_tensor
 
 
 def get_edges_from_verts_2d(
@@ -78,36 +97,6 @@ def if_rects_intersect_hull_2d(
     return torch.unique(edges_indices[index[:, 1]][:, 0])
 
 
-def get_rects_verts_2d(rects):
-    return torch.stack(
-        [
-            rects[:, 0, :2],
-            rects[:, 0, :2] + rects[:, 1, :2],
-            rects[:, 0, :2] + rects[:, 1, :2] + rects[:, 2, :2],
-            rects[:, 0, :2] + rects[:, 2, :2],
-        ],
-        dim=1,
-    )
-
-
-def get_rects_center_2d(rects):
-    return rects[:, 0, :2] + 0.5 * (rects[:, 1, :2] + rects[:, 2, :2])
-
-
-def get_rects_edges_2d(rects):
-    verts = get_rects_verts_2d(rects)
-    edges = torch.stack(
-        [
-            verts[:, (0, 1)],
-            verts[:, (1, 2)],
-            verts[:, (2, 3)],
-            verts[:, (3, 0)],
-        ],
-        dim=1,
-    )
-    return edges
-
-
 def get_rays_2d(pa_arr: torch.Tensor, pb_arr: torch.Tensor) -> torch.Tensor:
     """
     Get rays from array of points a and array of points b
@@ -140,13 +129,6 @@ def get_fov_pixel_centers_2d(
         - fov_dims * 0.5
         + fov_center
     )
-
-
-def plot_rects(rects, ax, **kwargs):
-    verts = get_rects_verts_2d(rects)
-    p = PolyCollection(verts.tolist(), **kwargs)
-    ax.add_collection(p)
-    return p
 
 
 def get_angular_term_subdiv(rays, rects):
@@ -215,37 +197,6 @@ def get_rect_subdivs(rect, nsubs):
         ],
         dim=1,
     )
-
-
-# def plot_rays_2d(ax, rays, **kwargs):
-#         lines_segs = LineCollection(
-#         rays[:, i].view(-1, 2, 2).tolist(), colors="cyan", linewidths=1, ls="-"
-#     )
-#     ax.add_collection(lines_segs)
-
-# def plot_fov_2d(ax, fov_pixel_centers, fov_dims,**kwargs):
-#     hull = get_convex_hull_2d(get_verts_sorted_2d(get_fov_verts_2d(fov_dims)))
-
-#     fov_frame = ax.add_patch(
-#         Polygon(hull, closed=True, fill=False, edgecolor="purple")
-#     )
-#     fov_frame.set_zorder(10)
-
-
-def plot_scanner_2d(ax, rect_tensors, rays, pstyles: list):
-    legend_handles = []
-    for id, rect_tensor in enumerate(rect_tensors):
-        patch = mpatches.Patch(**pstyles[id])
-        legend_handles.append(patch)
-        _ = plot_rects(rect_tensor, ax, **pstyles[id])
-    ax.set_aspect("equal")
-    pa_arr = rays[:, 0, 0]
-    pb_arr = rays[0, :, 1]
-
-    # plot the points a and b
-    ax.plot(pa_arr[:, 0], pa_arr[:, 1], "o", ms=2, c="r")
-    ax.plot(pb_arr[:, 0], pb_arr[:, 1], "o", ms=2, c="orange")
-    return legend_handles
 
 
 def get_fov_verts_2d(fov_dims):
@@ -381,20 +332,24 @@ def get_cuts_ray_on_edges_2d(
         (v1[:, :, 0] * v3[:, :, 1] - v1[:, :, 1] * v3[:, :, 0]) / det,
         float("nan"),
     )
-    t = torch.where((s <= 1) * (s >= 0) * (t <= 1) * (t >= 0), t, float("nan"))
+    t = torch.where((s <= 1) * (s >= 0) * (t < 1) * (t > 0), t, float("nan"))
     index = torch.argwhere(~torch.isnan(t))
-    return t[index[:, 0], index[:, 1]], index
+    return t, index
 
 
 def get_reduced_raytracing_edges_2d(
-    idx: int,
-    edges: torch.Tensor,
-    edge_indices: torch.Tensor,
-    corners: torch.Tensor,
-    xtal_center: torch.Tensor,
+    crystal_idx: int,
+    geom_dict: dict,
 ):
     # edges shape (n_geoms,4, 2, 2)
     # edge_indices shape (n_geoms, 2)
+
+    idx = crystal_idx + geom_dict["n_plates"]
+    edges = geom_dict["all_geoms_edges_2d"]
+    edge_indices = geom_dict["all_edges_indices"]
+    corners = geom_dict["fov_corners"]
+    xtal_center = geom_dict["pb_tensor"][crystal_idx]
+
     hull = get_convex_hull_2d(torch.vstack((xtal_center.unsqueeze(0), corners)))
     geoms_verts_2d = edges.view(-1, 4, 2, 2)[:, :, 0]
     # geometry indices that intersect with the hull
@@ -413,4 +368,269 @@ def get_reduced_raytracing_edges_2d(
     local_indices = torch.unique(
         torch.cat((local_intersection_indices, local_inclusion_indices))
     )
-    return edges[local_indices], local_indices
+    return (
+        edges[local_indices],
+        local_indices,
+    )
+
+
+def get_cuts_rays_on_self_2d(
+    rays: torch.Tensor,
+    edges: torch.Tensor,
+    epsilon: float = 1e-6,
+) -> torch.Tensor:
+    """
+    Function to get the intersections of rays on four edges.
+
+    Both rays and edges are 2D line segments.
+
+    Args:
+      rays (torch.Tensor): A tensor of shape (n_rays, 2, 2) representing the rays. Each ray is defined by two points in 2D space.
+      edges (torch.Tensor): A tensor of shape (n_edges, 2, 2) representing the edges. Each edge is defined by two points in 2D space.
+
+    Returns:
+      torch.Tensor: A dense tensor of shape (n_rays, 1) containing the `t` parameters of the intersections.
+      If a ray does not intersect with an edge, the corresponding value is set to 0.
+    """
+
+    # edges shape (4, 2, 2)
+    # rays shape (number rays, 2, 2)
+    n_edges = 4
+    n_rays = rays.shape[0]
+
+    # Increase the precision of the rays and edges
+    # rays = rays.double()
+    # edges = edges.double()
+
+    v1 = (rays[:, 1] - rays[:, 0]).unsqueeze(1).expand(-1, n_edges, -1)
+    v2 = (edges[:, 0] - edges[:, 1]).unsqueeze(0).expand(n_rays, -1, -1)
+    # v1 = (rays[1] - rays[0]).unsqueeze(0).expand(n_edges, 2)
+    # v2 = edges[:, 0] - edges[:, 1]
+    v3 = edges[:, 0].unsqueeze(0).expand(n_rays, -1, -1) - rays[:, 0].unsqueeze(
+        1
+    ).expand(-1, n_edges, -1)
+    # v3 = edges[:, 0] - rays[0].unsqueeze(0).expand(n_edges, 2)
+
+    # cramer's rule
+    # v1, v2, v3 shape (n_rays, n_egdes, 2)
+    # det shape (n_rays,n_egdes,)
+    det = v1[:, :, 0] * v2[:, :, 1] - v1[:, :, 1] * v2[:, :, 0]
+    t = torch.where(
+        det != 0,
+        (v3[:, :, 0] * v2[:, :, 1] - v2[:, :, 0] * v3[:, :, 1]) / det,
+        -1,
+    )
+    s = torch.where(
+        det != 0,
+        (v1[:, :, 0] * v3[:, :, 1] - v1[:, :, 1] * v3[:, :, 0]) / det,
+        -1,
+    )
+    return torch.sort(
+        torch.where(
+            (s < 1 + epsilon) * (s + epsilon > 0) * (t < 1) * (t > 0), t, 0
+        )
+        .round(decimals=6)
+        .unique(dim=1),
+        dim=1,
+    ).values[:, -1]
+
+
+def get_cuts_rays_on_rectangles_2d(
+    rays: torch.Tensor,
+    edges: torch.Tensor,
+    epsilon: float = 1e-8,
+) -> torch.Tensor:
+    """
+    Function to get the intersections of rays on the four edges of rectangles.
+
+    Both rays and edges are 2D line segments.
+
+    Args:
+      rays (torch.Tensor): A tensor of shape (number of rays, 2, 2) representing the rays. Each ray is defined by two points in 2D space.
+      edges (torch.Tensor): A tensor of shape (number of rectangles, 4, 2, 2) representing the edges. Each edge is defined by two points in 2D space.
+
+    Returns:
+      torch.Tensor: A dense tensor of shape (number rays, number of rectangles, 4) containing the `t` parameters of the intersections.
+      If a ray does not intersect with an edge, the corresponding value is set to 0.
+    """
+
+    # edges shape (number of rectangles, 4, 2, 2)
+    # rays  shape (number of rays, 2, 2)
+    n_geoms = edges.shape[0]
+    n_rays = rays.shape[0]
+
+    # Increase the precision of the rays and edges
+    rays = rays.double()
+    edges = edges.double()
+
+    v1 = (
+        (rays[:, 1] - rays[:, 0])
+        .unsqueeze(1)
+        .unsqueeze(1)
+        .expand(n_rays, n_geoms, 4, 2)
+    )
+    v2 = (
+        (edges[:, :, 0] - edges[:, :, 1])
+        .unsqueeze(0)
+        .expand(n_rays, n_geoms, 4, 2)
+    )
+    v3 = edges[:, :, 0].unsqueeze(0).expand(n_rays, n_geoms, 4, 2) - rays[
+        :, 0
+    ].unsqueeze(1).unsqueeze(1).expand(n_rays, n_geoms, 4, 2)
+
+    # cramer's rule
+    # v1, v2, v3 shape (n_rays, n_geoms, 4, 2)
+    # det shape (n_rays, n_geoms, 4)
+    det = v1[:, :, :, 0] * v2[:, :, :, 1] - v1[:, :, :, 1] * v2[:, :, :, 0]
+    t = torch.where(
+        det != 0,
+        (v3[:, :, :, 0] * v2[:, :, :, 1] - v2[:, :, :, 0] * v3[:, :, :, 1])
+        / det,
+        -1,
+    )
+    s = torch.where(
+        det != 0,
+        (v1[:, :, :, 0] * v3[:, :, :, 1] - v1[:, :, :, 1] * v3[:, :, :, 0])
+        / det,
+        -1,
+    )
+    # Return :   A sparse tensor
+    # Shape :    (number rays, number of rectangles, 2)
+    # Elements : `t` parameters of the intersections.
+    return torch.sort(
+        torch.where(
+            (s < 1 + epsilon) * (s + epsilon > 0) * (t < 1) * (t > 0), t, 0
+        )
+        .round(decimals=6)
+        .unique(dim=2),
+        dim=2,
+    ).values[:, :, -2:]
+
+
+def get_pa_tensor(fov_dict):
+    # Define the FOV
+    # fov_n_pixels_tensor = torch.tensor([64, 64])
+    fov_n_pixels_tensor = fov_dict["n_pixels"]
+    fov_mm_per_pixel_tensor = fov_dict["mm_per_pixel"]
+    fov_center = fov_dict["center"]
+
+    # Get the FOV pixel centers
+    return get_fov_pixel_centers_2d(
+        fov_n_pixels_tensor, fov_mm_per_pixel_tensor, fov_center
+    ).view(-1, 2)
+
+
+def get_mu_tensor(n_xtals, n_plates):
+    return torch.cat(
+        [
+            torch.tensor([3.5]).repeat(n_plates),
+            torch.tensor([0.475]).repeat(n_xtals),
+        ]
+    )
+
+
+def load_scanner_geometry_npz(filepath: str):
+    from numpy import load as np_load
+
+    geom_data = np_load(filepath)
+    plate_geoms = geom_data["plate cuboids"]
+    xtal_geoms = geom_data["crystal cuboids"]
+
+    # Get the vertices of the cuboids
+    xtal_geoms_verts_2d = get_verts_2d_from_cuboids(xtal_geoms)
+    plate_geoms_verts_2d = get_verts_2d_from_cuboids(plate_geoms)
+    return plate_geoms_verts_2d, xtal_geoms_verts_2d
+
+
+def get_geom_dict(plate_geoms_verts_2d, xtal_geoms_verts_2d, fov_dict) -> dict:
+
+    pa_tensor = get_pa_tensor(fov_dict)
+
+    all_geoms_verts_2d = torch.cat([plate_geoms_verts_2d, xtal_geoms_verts_2d])
+    all_geoms_edges_2d = get_edges_from_verts_2d(all_geoms_verts_2d)
+
+    return {
+        "all_geoms_edges_2d": all_geoms_edges_2d,
+        "pa_tensor": pa_tensor,
+        "pb_tensor": xtal_geoms_verts_2d.mean(dim=1),
+        "all_edges_indices": get_edges_indices(
+            plate_geoms_verts_2d.shape[0] + xtal_geoms_verts_2d.shape[0]
+        ),
+        "mu_tensor": get_mu_tensor(
+            xtal_geoms_verts_2d.shape[0], plate_geoms_verts_2d.shape[0]
+        ),
+        "fov_corners": get_furthest_corners(pa_tensor),
+        "n_xtals": xtal_geoms_verts_2d.shape[0],
+        "n_plates": plate_geoms_verts_2d.shape[0],
+    }
+
+
+def get_edges_indices(n_all_geoms: int):
+    return torch.stack(
+        [
+            torch.arange(n_all_geoms).repeat_interleave(4),
+            torch.arange(4).repeat(n_all_geoms),
+        ],
+        dim=1,
+    )
+
+
+def get_ppdf(crystal_idx, geom_dict):
+    all_geoms_edges_2d = geom_dict["all_geoms_edges_2d"]
+    all_edges_indices = geom_dict["all_edges_indices"]
+    pb_tensor = geom_dict["pb_tensor"][crystal_idx]
+    pa_tensor = geom_dict["pa_tensor"]
+    # n_xtals = geom_dict["n_xtals"]
+    # n_plates = geom_dict["n_plates"]
+
+    # Get the mu values
+    mu_tensor = geom_dict["mu_tensor"]
+
+    # Get the overall index of the crystal
+    xtal_overall_idx = crystal_idx + geom_dict["n_plates"]
+
+    # Get the reduced edges for raytracing
+    reduced_edges, geom_indices = get_reduced_raytracing_edges_2d(
+        crystal_idx, geom_dict=geom_dict
+    )
+
+    # Get the edges of the crystal
+    edges_xtal = all_geoms_edges_2d[xtal_overall_idx].view(-1, 2, 2)
+
+    rays = get_rays_2d(pa_tensor, pb_tensor.unsqueeze(0)).squeeze(1)
+    rays_lengths = torch.norm(rays[:, 1] - rays[:, 0], dim=1)
+
+    n_geoms = reduced_edges.shape[0]
+    n_rays = rays.shape[0]
+
+    t_absorb = get_cuts_rays_on_self_2d(rays, edges_xtal)
+    t_attenu = get_cuts_rays_on_rectangles_2d(rays, reduced_edges)
+
+    dlmu_absorb = (
+        (1 - t_absorb) * rays_lengths * torch.abs(mu_tensor[xtal_overall_idx])
+    )
+    dlmu_attenu = (
+        torch.abs(t_attenu[:, :, 1] - t_attenu[:, :, 0])
+        * rays_lengths.unsqueeze(1).expand(-1, n_geoms)
+        * mu_tensor[geom_indices].unsqueeze(0).expand(n_rays, -1)
+    )
+
+    absorb_terms = 1 - torch.exp(-dlmu_absorb)
+    attenu_terms = torch.exp(-torch.sum(dlmu_attenu, dim=1))
+    angula_terms = get_angular_terms_2d(
+        rays, rays_lengths, edges_xtal.view(-1, 2, 2)[:2]
+    )
+    return absorb_terms * attenu_terms * angula_terms
+
+
+def set_default_device_as_cpu(use_logical_cores: bool = False):
+    import psutil
+
+    torch.set_default_device("cpu")
+    # Get the number of physical cores (excluding hyper-threading)
+    physical_cores = psutil.cpu_count(logical=False)
+    # Get the number of logical cores (including hyper-threading)
+    logical_cores = psutil.cpu_count(logical=True)
+    torch.set_num_threads(
+        int(physical_cores) if physical_cores is not None else 1
+    )
