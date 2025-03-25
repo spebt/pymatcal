@@ -1,7 +1,19 @@
-# PyTorch-based system matrix calculation package
+# Convex-hull-based raytracing PPDF calculation
 
-- Run on the HPC cluster through SLURM
-- `sbatch sysmat_torch_h5py_ompi_prod.sh`
-> [!TIP]
-> FOV size is set in `pytorch_ppdf.py`
-> - It can be easily set to read from the `YAML` file.
+## Prerequisites
+
+- Python 3
+- PyTorch
+- H5py
+- rich
+
+## How to run
+```bash
+python ppdf_calculation_nompi_csv.py
+```
+or
+
+```bash
+python ppdf_calculation_nompi_npz.py
+```
+
