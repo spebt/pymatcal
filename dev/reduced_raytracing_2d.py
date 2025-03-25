@@ -17,7 +17,7 @@ from raytracer_2d import (
 )
 
 
-def main(idx):
+def get_ppdf(idx):
 
     torch.set_default_device("cpu")
     # Load the geometry data
@@ -77,35 +77,6 @@ def main(idx):
 
     rays_lengths = torch.norm(rays[:, 1] - rays[:, 0], dim=1)
 
-    edges_self = get_edges_from_verts_2d(xtal_geoms_verts_2d[idx].unsqueeze(0))
-    ts_absorb, ts_absorb_index = get_cuts_ray_on_edges_2d(
-        rays, edges_self.view(-1, 2, 2)
-    )
-
-    dl_absorb = rays_lengths * (1.0 - ts_absorb)
-
-    ts_attenu, ts_attenu_index = get_cuts_ray_on_edges_2d(
-        rays, reduced_edges.view(-1, 2, 2)
-    )
-    ts_sort_indices = torch.sort(ts_attenu_index[:, 0])[1]
-    ts_attenu, _ = torch.sort(ts_attenu[ts_sort_indices].reshape(-1, 2), dim=1)
-
-    # ts_attenu_diff = ts_attenu[:, 1] - ts_attenu[:, 0]
-    ts_attenu_diff = torch.empty((n_rays, n_geoms))
-
-
-    angular_terms = get_angular_terms_2d(
-        rays, rays_lengths, edges_self.view(-1, 2, 2)[:2]
-    )
-
-    # dl_attenu = (
-    #     rays_lengths[torch.sort((ts_attenu_index[:, 0]))[0][::2]] * ts_attenu_diff
-    # )
-    dl_attenu = rays_lengths.unsqueeze(1).expand(n_rays, n_geoms) * ts_attenu_diff
-    local_edges_indices = edges_indices.view(-1, 4, 2)[geom_indices].view(-1, 2)
-    # attenu_geoms_index = local_edges_indices[ts_attenu_index[ts_sort_indices][:, 1]][
-    #     ::2, 0
-    # ]
     # use same linear attenuation coefficient for all crystals
     # use same linear attenuation coefficient for all plates
     # mu_xtal = 0.475/mm
@@ -116,25 +87,72 @@ def main(idx):
             torch.tensor([0.475]).repeat(xtal_geoms_verts_2d.shape[0]),
         ]
     )
-    # attenu_term = torch.sum(
-    #     torch.exp(
-    #         -dl_attenu * mu_tensor[geom_indices].unsqueeze(0).expand(n_rays, n_geoms)
-    #     ),
-    #     dim=1,
-    # )
-    # print(geom_indices.shape, mu_tensor.shape)
-    print(geom_indices)
-    absorb_term = torch.exp(
+
+    # Get the absorption terms
+    edges_self = get_edges_from_verts_2d(xtal_geoms_verts_2d[idx].unsqueeze(0))
+    ts_absorb, ts_absorb_index = get_cuts_ray_on_edges_2d(
+        rays, edges_self.view(-1, 2, 2)
+    )
+
+    dl_absorb = rays_lengths * (1.0 - ts_absorb)
+    absorb_terms = 1 - torch.exp(
         -dl_absorb
-        * mu_tensor[torch.ones_like(dl_absorb, dtype=torch.int32) * xtal_overall_idx]
+        * mu_tensor[
+            torch.ones_like(dl_absorb, dtype=torch.int32) * xtal_overall_idx
+        ]
     )
-    print(
-        absorb_term.shape,
-        # attenu_term.shape,
-        angular_terms.shape,
-        # attenu_geoms_index.shape,
+
+    # Get the attenuation terms
+    ts_attenu, ts_attenu_indices = get_cuts_ray_on_edges_2d(
+        rays, reduced_edges.view(-1, 2, 2)
     )
+    # print("Shape of ts_attenu", ts_attenu.shape)
+    # print("Shape of ts_attenu_indices", ts_attenu_indices.shape)
+    ts_attenu_sorted_indices_indices = torch.sort(ts_attenu_indices[:, 0])[1]
+    ts_attenu_sorted_indices = ts_attenu_indices[
+        ts_attenu_sorted_indices_indices
+    ][::2]
+    attenu_rays_indices = ts_attenu_sorted_indices[:, 0]
+    attenu_geoms_indices = torch.arange(n_geoms).repeat_interleave(4)[
+        ts_attenu_sorted_indices[:, 1]
+    ]
+    ts_attenu_diff = torch.zeros((n_rays, n_geoms))
+
+    ts_attenu_diff[attenu_rays_indices, attenu_geoms_indices] = torch.abs(
+        ts_attenu[ts_attenu_sorted_indices_indices].view(-1, 2)[:, 0]
+        - ts_attenu[ts_attenu_sorted_indices_indices].view(-1, 2)[:, 1]
+    )
+    dl_attenu = (
+        rays_lengths.unsqueeze(1).expand(n_rays, n_geoms) * ts_attenu_diff
+    )
+    attenu_terms = torch.exp(
+        torch.sum(
+            -dl_attenu
+            * mu_tensor[geom_indices].unsqueeze(0).expand(n_rays, n_geoms),
+            dim=1,
+        )
+    )
+
+    angular_terms = get_angular_terms_2d(
+        rays, rays_lengths, edges_self.view(-1, 2, 2)[:2]
+    )
+    out = angular_terms * absorb_terms * attenu_terms
+    return out
 
 
 if __name__ == "__main__":
-    main(26)
+    import sys
+
+    try:
+        idx = int(sys.argv[1])
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+
+    ppdf = get_ppdf(idx)
+    import matplotlib.pyplot as plt
+
+    fig = plt.figure(figsize=(12, 10))
+    ax = fig.add_subplot(111)
+    ax.imshow(ppdf.view(32, 32).numpy())
+    fig.savefig(f"ppdf_{idx:03d}.png")
