@@ -1,10 +1,7 @@
 import torch
 import time
-
-import pandas as pd
 import h5py
 from rich.progress import Progress, BarColumn
-from rich.console import Console
 
 from raytracer_2d import (
     load_scanner_geometry_csv,
