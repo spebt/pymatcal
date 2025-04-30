@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     with progress:
 
-        taks1 = progress.add_task(
+        task1 = progress.add_task(
             "Processing...", total=aperture_w_list.shape[0]
         )
         for aperture_w in aperture_w_list:
@@ -46,19 +46,19 @@ if __name__ == "__main__":
 
             # ppdf = torch.empty(0, fov_n_pixels)
 
-            plate_verts_2d, xtal_verts_2d = load_scanner_geometry_csv(
+            plate_vertices_2d, xtal_vertices_2d = load_scanner_geometry_csv(
                 scanner_geometry_dir
                 + "/"
                 + "scanner_{}_mm_aperture.csv".format(aperture_w)
             )
-            n_xtals = xtal_verts_2d.shape[0]
+            n_xtals = xtal_vertices_2d.shape[0]
             ppdf = out_h5file.create_dataset(
                 "ppdfs", shape=(n_xtals, fov_n_pixels), dtype="f"
             )
 
-            geom_dict = get_geom_dict(plate_verts_2d, xtal_verts_2d, fov_dict)
+            geom_dict = get_geom_dict(plate_vertices_2d, xtal_vertices_2d, fov_dict)
 
-            idx_end = xtal_verts_2d.shape[0]
+            idx_end = xtal_vertices_2d.shape[0]
             elapsed_times = torch.zeros(n_xtals)
             task2 = progress.add_task("Computing PPDF", total=n_xtals)
             for idx in range(n_xtals):
@@ -80,5 +80,5 @@ if __name__ == "__main__":
             progress.console.print(
                 f"Average time per iteration: {elapsed_times.mean():.4f} seconds"
             )
-            progress.update(taks1, advance=1)
+            progress.update(task1, advance=1)
         # progress.refresh()
