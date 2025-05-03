@@ -2,8 +2,6 @@
 from torch import empty as empty_tensor, tensor, zeros, Tensor
 import time
 import h5py
-from rich.progress import Progress, BarColumn
-from rich.console import Console
 
 
 def load_scanner_layouts(filename: str):
@@ -36,8 +34,6 @@ if __name__ == "__main__":
     #     print("Requires two arguments: idx_start and idx_end")
     #     sys.exit(1)
 
-    set_default_device_as_cpu()
-
     fov_dict = {
         "n_pixels": tensor([512, 512]),
         "mm_per_pixel": tensor([0.25, 0.25]),
@@ -51,94 +47,53 @@ if __name__ == "__main__":
     n_positions = 2
     print(f"Number of positions: {n_positions}")
 
-    progress = Progress(
-        "{task.description}",
-        BarColumn(),
-        "{task.completed:03d}/{task.total:03d}",
-        "[progress.percentage]{task.percentage:>3.0f}% Completed",
-        transient=True,
-        console=Console(),
-    )
     output_hdf5_dir = f"scanner_layouts_{filename_unique_id:s}"
     if not os.path.exists(output_hdf5_dir):
         os.makedirs(output_hdf5_dir)
 
-    with progress:
+    for layout_idx in range(n_positions):
 
-        task_layouts = progress.add_task("Loading scanner layouts", total=n_positions)
+        print(f"Evaluating position {layout_idx:03d} ...")
+        # Load the scanner geometry
+        plate_verts_2d = scanner_layouts_data[f"position {layout_idx:03d}"][
+            "plate segments"
+        ].to("cpu")
+        xtal_verts_2d = scanner_layouts_data[f"position {layout_idx:03d}"][
+            "detector units"
+        ].to("cpu")
 
-        for layout_idx in range(n_positions):
+        # n_xtals = xtal_verts_2d.shape[0]
+        n_xtals = 20
+        geom_dict = get_geom_dict(plate_verts_2d, xtal_verts_2d, fov_dict)
 
-            # Load the scanner geometry
-            plate_verts_2d = scanner_layouts_data[f"position {layout_idx:03d}"][
-                "plate segments"
-            ].to("cpu")
-            xtal_verts_2d = scanner_layouts_data[f"position {layout_idx:03d}"][
-                "detector units"
-            ].to("cpu")
+        fov_n_pixels = int(fov_dict["n_pixels"].prod())
+        ppdf = empty_tensor(0, fov_n_pixels)
 
-            # n_xtals = xtal_verts_2d.shape[0]
-            n_xtals = 50
-            geom_dict = get_geom_dict(plate_verts_2d, xtal_verts_2d, fov_dict)
+        elapsed_times = zeros(n_xtals)
 
-            fov_n_pixels = int(fov_dict["n_pixels"].prod())
-            ppdf = empty_tensor(0, fov_n_pixels)
+        output_hdf5_filename = f"position_{layout_idx:03d}_ppdfs.hdf5"
 
-            elapsed_times = zeros(n_xtals)
+        out_h5file = h5py.File(
+            f"{output_hdf5_dir:s}/position_{layout_idx:03d}_ppdfs.hdf5",
+            "w",
+        )
+        ppdf = out_h5file.create_dataset(
+            "ppdfs", shape=(n_xtals, fov_n_pixels), dtype="f"
+        )
+        for idx in range(n_xtals):
+            # progress.console.print(f"Current idx: {idx}")
 
-            output_hdf5_filename = f"position_{layout_idx:03d}_ppdfs.hdf5"
+            start_time = time.time()
+            try:
+                ppdf[idx] = get_ppdf(idx, geom_dict=geom_dict).unsqueeze(0).numpy()
 
-            out_h5file = h5py.File(
-                f"{output_hdf5_dir:s}/position_{layout_idx:03d}_ppdfs.hdf5",
-                "w",
-            )
-            ppdf = out_h5file.create_dataset(
-                "ppdfs", shape=(n_xtals, fov_n_pixels), dtype="f"
-            )
-            task_crystal = progress.add_task("Computing PPDF", total=n_xtals)
-            for idx in range(n_xtals):
-                # progress.console.print(f"Current idx: {idx}")
+            except Exception as e:
+                print("ID", idx, "\nError:", e)
+                sys.exit(1)
+            end_time = time.time()
+            elapsed_times[idx] = end_time - start_time
 
-                start_time = time.time()
-                try:
-                    ppdf[idx] = get_ppdf(idx, geom_dict=geom_dict).unsqueeze(0).numpy()
+        # close the HDF5 file
+        out_h5file.close()
 
-                except Exception as e:
-                    print("ID", idx, "\nError:", e)
-                    sys.exit(1)
-                end_time = time.time()
-                elapsed_times[idx] = end_time - start_time
-                progress.update(task_crystal, advance=1)
-
-            # close the HDF5 file
-            out_h5file.close()
-            progress.console.print("PPDF calculation completed")
-            progress.console.print(
-                f"Average time per iteration: {elapsed_times.mean():.4f} seconds"
-            )
-            # Destroy the task
-            progress.remove_task(task_crystal)
-
-            progress.update(task_layouts, advance=1)
-            progress.refresh()
-
-    # with progress:
-    #     for idx in range(n_xtals):
-    #         # progress.console.print(f"Current idx: {idx}")
-
-    #         start_time = time.time()
-    #         try:
-    #             ppdf[idx] = get_ppdf(idx, geom_dict=geom_dict).unsqueeze(0).numpy()
-
-    #         except Exception as e:
-    #             print("ID", idx, "\nError:", e)
-    #             sys.exit(1)
-    #         end_time = time.time()
-    #         elapsed_times[idx] = end_time - start_time
-    #         progress.update(task, advance=1)
-    #     out_h5file.close()
-    #     progress.console.print("PPDF calculation completed")
-    #     progress.console.print(
-    #         f"Average time per iteration: {elapsed_times.mean():.4f} seconds"
-    #     )
-    # progress.refresh()
+        print(f"Average time per iteration: {elapsed_times.mean():.4f} seconds")
