@@ -174,3 +174,6 @@ examples/panel_2.yaml
 examples/panel_3.yaml
 examples/panel_4.yaml
 examples/panel_5.yaml
+
+/*.tensor
+/*.png

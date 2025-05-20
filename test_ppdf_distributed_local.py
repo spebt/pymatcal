@@ -1,6 +1,7 @@
 import torch.distributed as dist
 from torch import (
     Tensor,
+    tensor,
     arange,
     zeros as zeros_tensor,
     save as torch_save,
@@ -100,12 +101,14 @@ def main():
 
     local_sfov_ids = get_local_sfov_ids(sfov_ids_global, rank, size)
 
+    crystal_ids = tensor([380, 520, 620])
+
     ppdf = zeros_tensor(int(fov_dict["n pixels"].prod()), dtype=torch_float64)
-    for crystal_id in range(10):
+    for crystal_id in crystal_ids:
         ppdf = run_sfov_crystal(
             local_sfov_ids,
             sfov_pxs_ids,
-            crystal_id,
+            int(crystal_id),
             fov_dict["n pixels"],
             *args,
         )
