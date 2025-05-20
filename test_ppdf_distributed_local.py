@@ -1,8 +1,6 @@
 import torch.distributed as dist
 from torch import (
     Tensor,
-    tensor,
-    stack,
     arange,
     zeros as zeros_tensor,
     save as torch_save,

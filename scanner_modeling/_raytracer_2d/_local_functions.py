@@ -11,7 +11,7 @@ from .._convex_hull._convex_hull_functions import (
 )
 from ..geometry_2d import (
     fov_corners_vertices_2d,
-    points_to_refs_angle_2d_batch,
+    polygon_to_points_angular_span_2d_batch,
     polygon_edges_from_vertices_2d_batch,
     reduced_scanner_objects_ids_local,
 )
@@ -465,17 +465,8 @@ def ppdf_2d_local_dev(
         rays, rays_sub_crystal_t
     ).view(rays.shape[0], rays.shape[1])
 
-    sub_crystals_vertices_rads = points_to_refs_angle_2d_batch(
-        sub_crystals_vertices.view(-1, 2), pa_batch
-    ).view(
-        pa_batch.shape[0],
-        sub_crystals_vertices.shape[0],
-        sub_crystals_vertices.shape[1],
-    )
-
-    subdivision_rads_span = (
-        sub_crystals_vertices_rads.max(dim=2).values
-        - sub_crystals_vertices_rads.min(dim=2).values
+    subdivision_rads_span = polygon_to_points_angular_span_2d_batch(
+        sub_crystals_vertices, pa_batch
     )
 
     sum_plate_exponent = (
@@ -617,17 +608,8 @@ def ppdf_2d_local(
         rays, rays_sub_crystal_t
     ).view(rays.shape[0], rays.shape[1])
 
-    sub_crystals_vertices_rads = points_to_refs_angle_2d_batch(
-        sub_crystals_vertices.view(-1, 2), pa_batch
-    ).view(
-        pa_batch.shape[0],
-        sub_crystals_vertices.shape[0],
-        sub_crystals_vertices.shape[1],
-    )
-
-    subdivision_rads_span = (
-        sub_crystals_vertices_rads.max(dim=2).values
-        - sub_crystals_vertices_rads.min(dim=2).values
+    subdivision_rads_span = polygon_to_points_angular_span_2d_batch(
+        sub_crystals_vertices, pa_batch
     )
 
     sum_plate_exponent = (

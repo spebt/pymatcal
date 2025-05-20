@@ -1,8 +1,9 @@
 from typing import Dict, Sequence
 
-from torch import Tensor, arange, atan2, float32, float64
+from torch import Tensor, arange, atan2, float32
+from torch import float64 as torch_float64
 from torch import max as torch_max
-from torch import meshgrid, pi, stack, tensor
+from torch import meshgrid, pi, stack, tensor, where
 from torch.nn import functional as F
 
 
@@ -95,11 +96,38 @@ def points_to_refs_angle_2d_batch(
     n_points = points_batch.shape[0]
     n_refs = ref_point_batch.shape[0]
     points_batch = (
-        points_batch.to(float64).view(1, n_points, 2).expand(n_refs, -1, -1)
+        points_batch.to(torch_float64)
+        .view(1, n_points, 2)
+        .expand(n_refs, -1, -1)
     )
     ref_point = ref_point_batch.view(n_refs, 1, 2).expand(-1, n_points, -1)
-    angles = atan2(
+    return atan2(
         points_batch[:, :, 1] - ref_point[:, :, 1],
         points_batch[:, :, 0] - ref_point[:, :, 0],
     )
-    return angles + 2 * pi * (angles < 0).float()
+
+
+def polygon_to_points_angular_span_2d_batch(
+    polygon_vertices_batch: Tensor,
+    ref_points_batch: Tensor,
+) -> Tensor:
+    """
+    Calculate the angular span of points within a polygon in 2D.
+    """
+    polygon_vertices_rads = points_to_refs_angle_2d_batch(
+        polygon_vertices_batch.view(-1, 2), ref_points_batch
+    ).view(
+        ref_points_batch.shape[0],
+        polygon_vertices_batch.shape[0],
+        polygon_vertices_batch.shape[1],
+    )
+
+    polygon_rads_span_batch = (
+        polygon_vertices_rads.max(dim=2).values
+        - polygon_vertices_rads.min(dim=2).values
+    )
+    return where(
+        polygon_rads_span_batch > pi,
+        2 * pi - polygon_rads_span_batch,
+        polygon_rads_span_batch,
+    )

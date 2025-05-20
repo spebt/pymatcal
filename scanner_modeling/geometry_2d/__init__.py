@@ -6,6 +6,7 @@ __all__ = [
     "fov_corners_vertices_2d",
     "fov_tensor_dict",
     "points_to_refs_angle_2d_batch",
+    "polygon_to_points_angular_span_2d_batch",
 ]
 
 from .._geometry_2d._geometry_2d_polygon import (
@@ -13,11 +14,12 @@ from .._geometry_2d._geometry_2d_polygon import (
     reduced_scanner_objects_ids_local,
 )
 from .._geometry_2d._geometry_2d_io import (
-	load_scanner_layouts,
+    load_scanner_layouts,
     load_scanner_geometry_from_layout,
 )
 from .._geometry_2d._geometry_2d_utils import (
     fov_corners_vertices_2d,
     fov_tensor_dict,
     points_to_refs_angle_2d_batch,
+    polygon_to_points_angular_span_2d_batch,
 )
