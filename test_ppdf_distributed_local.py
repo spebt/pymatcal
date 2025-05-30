@@ -51,11 +51,33 @@ def run_sfov_crystal(
     return ppdf
 
 
-def main():
+def main(
+    layouts_dir: str = "scanner_layouts",
+    layouts_filename: str = "layouts.tensor",
+):
+    """
+    Main function to run the distributed PPDF calculation for crystals in a scanner layout.
+    This function initializes the distributed environment, loads the scanner layouts,
+    sets up the field of view (FOV) properties, and runs the PPDF calculation for specified crystals.
+    It saves the results to files named `ppdf_<crystal_id>.tensor` for each crystal processed.
+
+    Parameters
+    ----------
+    layouts_dir : str
+        Directory containing the scanner layouts.
+
+    layouts_filename : str
+        Filename of the scanner layouts.
+
+    Returns
+    -------
+    None
+
+    """
 
     scanner_layouts, layouts_md5 = load_scanner_layouts(
-        "scanner_layouts",
-        "scanner_layouts_77faff53af5863ca146878c7c496c75e.tensor",
+        layouts_dir,
+        layouts_filename,
     )
 
     mu_dict = {"plate": 3.5, "crystal": 0.475}  # mm^-1
@@ -101,7 +123,7 @@ def main():
 
     local_sfov_ids = get_local_sfov_ids(sfov_ids_global, rank, size)
 
-    crystal_ids = tensor([380, 520, 620])
+    crystal_ids = tensor([0])
 
     ppdf = zeros_tensor(int(fov_dict["n pixels"].prod()), dtype=torch_float64)
     for crystal_id in crystal_ids:
@@ -123,4 +145,21 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys, os
+
+    if len(sys.argv) != 2:
+        print(
+            "Usage: python test_ppdf_distributed_local.py <layouts_dir>/<layouts_filename>"
+        )
+        sys.exit(1)
+    layouts_dir = sys.argv[1].split("/")[0]
+    layouts_filename = sys.argv[1].split("/")[-1]
+
+    # Ensure the layouts file exists
+    if not os.path.exists(os.path.join(layouts_dir, layouts_filename)):
+        print(
+            f"File {layouts_filename} does not exist in directory {layouts_dir}."
+        )
+        sys.exit(1)
+
+    main(layouts_dir, layouts_filename)

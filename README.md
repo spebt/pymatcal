@@ -26,7 +26,7 @@ python test_ppdf_local.py
 Script for running locally with `torch.distributed`
 
 ```bash
-OMP_NUM_THREADS=2 torchrun --nproc_per_node=4 test_ppdf_distributed_local.py
+OMP_NUM_THREADS=2 torchrun --nproc_per_node=4 test_ppdf_distributed_local.py <layouts_path>/<layouts_filename>
 ```
 
 #### `plot_ppdf.py`
@@ -39,7 +39,8 @@ The script can be run in batch mode, i.e., it can take multiple files as input a
 python plot_ppdf.py <filename_1> <filename_2> ...
 ```
 
-- Example: _all the files in the current directory_ (`Linux`)
+> [!TIPS]
+> Example: _all the files in the current directory_ (`Linux`)
 
 ```bash
 python plot_ppdf.py $(ls *.tensor)
