@@ -39,7 +39,7 @@ The script can be run in batch mode, i.e., it can take multiple files as input a
 python plot_ppdf.py <filename_1> <filename_2> ...
 ```
 
-> [!TIPS]
+> [!TIP]
 > Example: _all the files in the current directory_ (`Linux`)
 
 ```bash
