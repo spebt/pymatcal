@@ -52,8 +52,8 @@ def run_sfov_crystal(
 
 
 def main(
-    layouts_dir: str = "scanner_layouts",
-    layouts_filename: str = "layouts.tensor",
+    layouts_dir: str,
+    layouts_filename: str,
 ):
     """
     Main function to run the distributed PPDF calculation for crystals in a scanner layout.
