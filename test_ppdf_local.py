@@ -1,5 +1,5 @@
 if __name__ == "__main__":
-
+    import torch.profiler
     from rich.progress import (
         BarColumn,
         MofNCompleteColumn,
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     mu_dict = {"plate": 3.5, "crystal": 0.475}  # mm^-1
 
-    fov_dict = fov_tensor_dict((512, 512), (128, 128), (0.0, 0.0), (8, 8))
+    fov_dict = fov_tensor_dict((512, 512), (128, 128), (0.0, 0.0), (16, 16))
 
     sfov_pxs_ids, sfov_pxs_coords, sfov_corners_batch = sfov_properties(
         fov_dict
@@ -68,24 +68,42 @@ if __name__ == "__main__":
     sfov_pxs_ids_1d = (
         sfov_pxs_ids[:, :, 0] * fov_dict["n pixels"][0] + sfov_pxs_ids[:, :, 1]
     )
-    # print(sfov_pxs_ids_1d.shape)
-    with progress:
-        task = progress.add_task(description="Calculating PPDFs", total=n_sfov)
-        progress.update(task, advance=0)
-        for sfov_idx in range(n_sfov):
-            ppdf[sfov_pxs_ids_1d[sfov_idx]] = (
-                ppdf_2d_local(
-                    sfov_idx,
-                    crystal_idx,
-                    sfov_pxs_coords,
-                    sfov_corners_batch,
-                    plate_objects_vertices,
-                    crystal_objects_vertices,
-                    plate_objects_edges,
-                    crystal_objects_edges,
-                    subdivision_grid,
-                    mu_dict,
-                )
+
+    with torch.profiler.profile(
+        activities=[
+            torch.profiler.ProfilerActivity.CPU,
+        ],
+        record_shapes=True,  # Optional: records tensor shapes
+        profile_memory=True,  # Optional: profiles memory usage
+        with_stack=True,  # Optional: records call stacks for better source attribution
+        # (can add overhead)
+    ) as prof:
+        with progress:
+            task = progress.add_task(
+                description="Calculating PPDFs", total=n_sfov
             )
-            progress.update(task, advance=1)
-        torch_save(ppdf, f"ppdf_{crystal_idx:03}_loop.tensor")
+            progress.update(task, advance=0)
+            for sfov_idx in range(n_sfov):
+                # --- Your tensor-heavy code section STARTS here ---
+                with torch.profiler.record_function(f"sfov_ppdf_{sfov_idx}"):
+                    ppdf[sfov_pxs_ids_1d[sfov_idx]] = ppdf_2d_local(
+                        sfov_idx,
+                        crystal_idx,
+                        sfov_pxs_coords,
+                        sfov_corners_batch,
+                        plate_objects_vertices,
+                        crystal_objects_vertices,
+                        plate_objects_edges,
+                        crystal_objects_edges,
+                        subdivision_grid,
+                        mu_dict,
+                    )
+                progress.update(task, advance=1)
+    # --- Your tensor-heavy code section ENDS here ---
+
+    # print("CPU time usage:")
+    # print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=15))
+
+    # (Recommended) Export for detailed analysis in TensorBoard or Chrome Tracing
+    prof.export_chrome_trace("tensor_ops_trace.json")
+    torch_save(ppdf, f"ppdf_{crystal_idx:03}_loop.tensor")
