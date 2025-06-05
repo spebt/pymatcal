@@ -1,20 +1,16 @@
 from typing import Dict, List, Sequence, Tuple
 
-from torch import Tensor, arange, argwhere, bmm, cat
+from torch import Tensor, arange, argwhere, bmm, cat, device
 from torch import float64 as torch_float64
 from torch import int32 as torch_int32
 from torch import linspace, meshgrid, pi, stack, tensor, where
 
-from .._convex_hull._convex_hull_functions import (
-    convex_hull_2d,
-    sort_points_for_hull_2d,
-)
-from ..geometry_2d import (
-    fov_corners_vertices_2d,
-    polygon_to_points_angular_span_2d_batch,
-    polygon_edges_from_vertices_2d_batch,
-    reduced_scanner_objects_ids_local,
-)
+from .._convex_hull._convex_hull_functions import (convex_hull_2d,
+                                                   sort_points_for_hull_2d)
+from ..geometry_2d import (fov_corners_vertices_2d,
+                           polygon_edges_from_vertices_2d_batch,
+                           polygon_to_points_angular_span_2d_batch,
+                           reduced_scanner_objects_ids_local)
 
 
 def rays_2d_batch(pa_batch: Tensor, pb_batch: Tensor) -> Tensor:
@@ -186,7 +182,7 @@ def subdivision_grid_rectangle(n_sub: Sequence[int] | Tensor) -> Tensor:
     )  # shape (n_sub**2, 4, 2)
 
 
-def subdivision_vertices_rectangle(vertices: Tensor, grid: Tensor) -> Tensor:
+def subdivision_vertices_rectangle(vertices: Tensor, grid: Tensor, device=device("cpu")) -> Tensor:
     """
     Subdivide a rectangle into n_sub x n_sub smaller rectangles.
     """
@@ -496,7 +492,8 @@ def ppdf_2d_local(
     plate_objects_edges: Tensor,
     crystal_objects_edges: Tensor,
     subdivision_grid: Tensor,
-    mu_dict: Dict,
+    mu_dict: Tensor,
+    device: device
 ) -> Tensor:
     """
     Calculate the ppdf of a section of the the entire FOV. 2D version.
@@ -561,7 +558,6 @@ def ppdf_2d_local(
     )
     reduced_plate_objects_ids, reduced_crystal_objects_ids = (
         reduced_scanner_objects_ids_local(
-            crystal_idx,
             local_hull,
             plate_objects_vertices,
             crystal_objects_vertices,
@@ -612,15 +608,11 @@ def ppdf_2d_local(
         sub_crystals_vertices, pa_batch
     )
 
-    sum_plate_exponent = (
-        intersection_length_plates * float(mu_dict["plate"])
-    ).sum(dim=2)
-    sum_crystal_exponent = (
-        intersection_length_crystals * float(mu_dict["crystal"])
-    ).sum(dim=2)
-    subdivision_exponent = intersection_length_subdivisions * float(
-        mu_dict["crystal"]
+    sum_plate_exponent = (intersection_length_plates * mu_dict[0]).sum(dim=2)
+    sum_crystal_exponent = (intersection_length_crystals * mu_dict[1]).sum(
+        dim=2
     )
+    subdivision_exponent = intersection_length_subdivisions * float(mu_dict[1])
     angular_term = subdivision_rads_span / (2 * pi)
     return (
         (-sum_plate_exponent - sum_crystal_exponent).exp()

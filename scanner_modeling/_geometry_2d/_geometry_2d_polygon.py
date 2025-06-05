@@ -1,6 +1,6 @@
-from torch import Tensor, abs, arange, argwhere, cat
+from torch import Tensor, abs, arange, argwhere, cat, device
 from torch import empty as empty_tensor
-from torch import float64, isnan, logical_or, sign, where
+from torch import float64, isnan, logical_or, sign, stack, where
 
 
 def polygon_edges_from_vertices_2d(polygon: Tensor) -> Tensor:
@@ -8,12 +8,7 @@ def polygon_edges_from_vertices_2d(polygon: Tensor) -> Tensor:
     Get edges of a polygon
     """
 
-    # polygon shape (n_vertices, 2)
-    n_vertices = polygon.shape[0]
-    edges: Tensor = empty_tensor((n_vertices, 2, 2), dtype=polygon.dtype)
-    edges[:, 0, :] = polygon
-    edges[:, 1, :] = polygon.roll(-1, dims=0)
-    return edges
+    return stack((polygon, polygon.roll(-1, dims=0)), dim=1)
 
 
 def polygon_edges_from_vertices_2d_batch(polygon_batch: Tensor) -> Tensor:
@@ -22,12 +17,7 @@ def polygon_edges_from_vertices_2d_batch(polygon_batch: Tensor) -> Tensor:
     """
 
     # polygon_batch shape (n_batch, n_vertices, 2)
-    n_batch = polygon_batch.shape[0]
-    n_vertices = polygon_batch.shape[1]
-    edges = empty_tensor((n_batch, n_vertices, 2, 2), dtype=polygon_batch.dtype)
-    edges[:, :, 0, :] = polygon_batch
-    edges[:, :, 1, :] = polygon_batch.roll(-1, dims=1)
-    return edges
+    return stack((polygon_batch, polygon_batch.roll(-1, dims=1)), dim=2)
 
 
 def line_segments_intersecting_ids_batch(
@@ -82,17 +72,19 @@ def line_segments_intersecting_ids_batch(
     return (argwhere(~isnan(t))[:, 1]).unique()
 
 
-def polygons_hull_intersecting_2d_polygons_ids(polygon_edges_batch, hull):
+def polygons_hull_intersecting_2d_polygons_ids(
+    polygon_edges_batch, hull, device=device("cpu")
+):
 
     # polygon_edges_batch shape (n_polygons, n_edges, 2, 2)
 
     hull_edges = polygon_edges_from_vertices_2d(hull)
     intersecting_edges_ids = line_segments_intersecting_ids_batch(
         hull_edges,
-        polygon_edges_batch.to(dtype=float64).view(-1, 2, 2),
+        polygon_edges_batch.view(-1, 2, 2),
     )
     polygon_edges_batch_polygon_ids = arange(
-        polygon_edges_batch.shape[0]
+        polygon_edges_batch.shape[0], device=device
     ).repeat_interleave(polygon_edges_batch.shape[1])
     intersecting_polygon_ids = polygon_edges_batch_polygon_ids[
         intersecting_edges_ids
@@ -101,7 +93,7 @@ def polygons_hull_intersecting_2d_polygons_ids(polygon_edges_batch, hull):
 
 
 def polygons_hull_enclosed_2d_polygons_ids(
-    polygon_vertices_batch: Tensor, hull
+    polygon_vertices_batch: Tensor, hull, device=device("cpu")
 ) -> Tensor:
     # vertices_batch shape (n_batch, n_vertices, 2)
     # hull shape (n_hull, 2)
@@ -126,7 +118,7 @@ def polygons_hull_enclosed_2d_polygons_ids(
         v2[:, :, :, 0] * v1[:, :, :, 1] - v2[:, :, :, 1] * v1[:, :, :, 0]
     ).view(n_batch, n_vertex, n_hull)
 
-    return arange(n_batch)[
+    return arange(n_batch, device=device)[
         logical_or(
             (cross_signs >= 0).all(dim=2), (cross_signs <= 0).all(dim=2)
         ).all(1)
@@ -134,21 +126,21 @@ def polygons_hull_enclosed_2d_polygons_ids(
 
 
 def reduced_scanner_objects_ids_local(
-    local_id: int,
     hull_2d: Tensor,
     plate_segments_vertices: Tensor,
     detector_units_vertices: Tensor,
     plate_segments_edges: Tensor,
     detector_units_edges: Tensor,
+    device: device = device("cpu"),
 ) -> tuple[Tensor, Tensor]:
     reduced_plate_segments_ids = (
         cat(
             (
                 polygons_hull_enclosed_2d_polygons_ids(
-                    plate_segments_vertices, hull_2d
+                    plate_segments_vertices, hull_2d, device=device
                 ),
                 polygons_hull_intersecting_2d_polygons_ids(
-                    plate_segments_edges, hull_2d
+                    plate_segments_edges, hull_2d, device=device
                 ),
             )
         )
@@ -160,10 +152,10 @@ def reduced_scanner_objects_ids_local(
         cat(
             (
                 polygons_hull_enclosed_2d_polygons_ids(
-                    detector_units_vertices, hull_2d
+                    detector_units_vertices, hull_2d, device=device
                 ),
                 polygons_hull_intersecting_2d_polygons_ids(
-                    detector_units_edges, hull_2d
+                    detector_units_edges, hull_2d, device=device
                 ),
             )
         )
