@@ -83,8 +83,8 @@ def line_segments_t(
 
     n_ls_a = ls_a.shape[0]
     n_ls_b = ls_b.shape[0]
-    ls_a = ls_a.to(torch_float64)
-    ls_b = ls_b.to(torch_float64)
+    # ls_a = ls_a.to(torch_float64)
+    # ls_b = ls_b.to(torch_float64)
     # epsilon
     eps = kwargs.get("eps", 1e-9)
 
@@ -150,15 +150,18 @@ def rays_intersection_lengths(
     """
     Calculate the intersection lengths of the rays given the t values.
     """
-    rays = rays.view(-1, 2, 2).to(torch_float64)
-    rays_t_reshaped = rays_t.reshape(rays.shape[0], -1, 4).to(torch_float64)
+    # rays = rays.view(-1, 2, 2).to(torch_float64)
+    rays = rays.view(-1, 2, 2)
+    # rays_t_reshaped = rays_t.reshape(rays.shape[0], -1, 4).to(torch_float64)
+    rays_t_reshaped = rays_t.reshape(rays.shape[0], -1, 4)
     rays_t_sorted = rays_t_reshaped.sort(dim=2).values
     rays_t_diff = rays_t_sorted[:, :, -1] - rays_t_sorted[:, :, -2]
 
     # rays_t_diff = where(rays_t_diff > 1 - eps, 2 - rays_t_diff, rays_t_diff)
-    length = rays_t_diff * (rays[:, 1] - rays[:, 0]).norm(
-        dim=1, dtype=torch_float64
-    ).view(-1, 1)
+    # length = rays_t_diff * (rays[:, 1] - rays[:, 0]).norm(
+    #     dim=1, dtype=torch_float64
+    # ).view(-1, 1)
+    length = rays_t_diff * (rays[:, 1] - rays[:, 0]).norm(dim=1).view(-1, 1)
 
     return length
 

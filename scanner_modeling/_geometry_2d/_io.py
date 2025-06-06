@@ -1,7 +1,7 @@
 import os
 from typing import Tuple,Dict
 
-from ._geometry_2d_polygon import polygon_edges_from_vertices_2d_batch
+from ._polygon import polygon_edges_from_vertices_2d_batch
 from torch import Tensor
 from torch import load as torch_load
 
