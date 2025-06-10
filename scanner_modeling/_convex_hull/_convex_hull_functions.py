@@ -1,17 +1,24 @@
 from torch import atan2, argsort, cat, unique as torch_unique, vstack, Tensor
 
 
-def get_three_p_cross(points: Tensor) -> Tensor:
-    return (
-        points[1, 0] * (points[2, 1] - points[0, 1])
-        + points[2, 0] * (points[0, 1] - points[1, 1])
-        + points[0, 0] * (points[1, 1] - points[2, 1])
-    )
+def three_p_cross(points: Tensor) -> Tensor:
+    """
+    Calculate the cross product of three points in 2D space.
+    Parameters
+    ----------
+    points : torch.Tensor, shape (3, 2)
+        The three points to calculate the cross product from.
+    Returns
+    -------
+    cross_product : torch.Tensor, shape (1,)
+        The cross product of the three points.
+    """
+    v_1 = points[1] - points[0]
+    v_2 = points[2] - points[0]
+    return v_1[0] * v_2[1] - v_1[1] * v_2[0]
 
 
-def sort_points_by_xy_2d_batch(
-    points_batch: Tensor, main_axis: int = 0
-) -> Tensor:
+def sort_points_by_xy_2d_batch(points_batch: Tensor, main_axis: int = 0) -> Tensor:
     # Get unique x values
     unique_x, unique_x_index = torch_unique(
         points_batch[:, :, 0], return_inverse=True, sorted=True
@@ -68,12 +75,8 @@ def sort_points_by_rad_2d(points: Tensor) -> Tensor:
 
 def sort_points_by_xy(points: Tensor) -> Tensor:
     # Get unique x values
-    _, unique_x_index = torch_unique(
-        points[:, 0], return_inverse=True, sorted=True
-    )
-    _, unique_y_index = torch_unique(
-        points[:, 1], return_inverse=True, sorted=True
-    )
+    _, unique_x_index = torch_unique(points[:, 0], return_inverse=True, sorted=True)
+    _, unique_y_index = torch_unique(points[:, 1], return_inverse=True, sorted=True)
     # Sort the indices based on x and y values
     indices_by_xy = argsort(unique_x_index * 100 + unique_y_index)
     return points[indices_by_xy]
@@ -124,12 +127,16 @@ def convex_hull_2d(sorted_points: Tensor):
     # get the convex hull
     convex_hull = sorted_points[:2]
     for i in range(2, sorted_points.shape[0]):
-        convex_hull = vstack((convex_hull, sorted_points[i]))
-        if (
-            convex_hull.shape[0] > 1
-            and get_three_p_cross(convex_hull[-3:]) <= 0
+        # convex_hull = vstack((convex_hull, sorted_points[i]))
+        while (
+            convex_hull.shape[0] > 2
+            and three_p_cross(
+                cat((convex_hull[-2:], sorted_points[i].unsqueeze(0)), dim=0)
+            )
+            < 0
         ):
-            convex_hull = vstack([convex_hull[:-2], convex_hull[-1]])
+            convex_hull = convex_hull[:-1]
+        convex_hull = vstack((convex_hull, sorted_points[i]))
     return convex_hull
 
 
