@@ -1,0 +1,39 @@
+#!/bin/bash -l
+# ===============================================
+# Debug MPI Parallel PyMatcal PPDF calculation on
+# UB HPC general-compute nodes
+# ===============================================
+
+#SBATCH -n32
+#SBATCH --cpus-per-task=8
+#SBATCH --mem-per-cpu=1024M
+#SBATCH --constraint="CASCADE-LAKE-IB"
+
+#SBATCH --job-name="debug-pymatcal-impi"
+#SBATCH --mail-user=myemailaddress@institution.edu
+#SBATCH --mail-type=NONE
+
+#SBATCH --partition=general-compute
+#SBATCH --qos=nih
+#SBATCH --cluster=ub-hpc
+
+# Load currently available modules
+ml intel gcccore/11.2.0 hdf5/1.14.1
+
+# Activate your virtual environment
+source ~/myenv/bin/activate
+
+# Confirm you're using the right Python and packages
+echo "Using Python at: $(which python3)"
+python3 -c "import torch; print('✅ Torch version:', torch.__version__)"
+python3 -c "import h5py; print('✅ h5py MPI support:', h5py.get_config().mpi)"
+python3 -c "import mpi4py; print('✅ mpi4py version:', mpi4py.__version__)"
+
+# Setup Intel MPI
+export I_MPI_DEBUG=4
+export I_MPI_PMI_LIBRARY=/opt/software/slurm/lib64/libpmi2.so
+
+# Run your program
+echo "Number of nodes allocated:" "$SLURM_JOB_NUM_NODES"
+PYMATCAL_DIR="/vscratch/grp-rutaoyao/Harsh/24_rots_again"
+srun --mpi=pmi2 python3 "$PYMATCAL_DIR"/ppdf_parallel_npz.py
