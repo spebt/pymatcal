@@ -1,0 +1,323 @@
+[cpn-i15-14.core.ccr.buffalo.edu:1926223] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-14.core.ccr.buffalo.edu:1926220] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-14.core.ccr.buffalo.edu:1926222] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-14.core.ccr.buffalo.edu:1926221] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-17.core.ccr.buffalo.edu:3383339] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-17.core.ccr.buffalo.edu:3383340] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-17.core.ccr.buffalo.edu:3383338] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-30.core.ccr.buffalo.edu:123137] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-30.core.ccr.buffalo.edu:123135] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-30.core.ccr.buffalo.edu:123136] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-11.core.ccr.buffalo.edu:1191277] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-11.core.ccr.buffalo.edu:1191275] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-11.core.ccr.buffalo.edu:1191274] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-11.core.ccr.buffalo.edu:1191276] pml_ucx.c:309  Error: Failed to create UCP worker
+[cpn-i15-11.core.ccr.buffalo.edu:1191275] [[39396,0],17] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+[cpn-i15-30.core.ccr.buffalo.edu:123136] [[39396,0],28] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+[cpn-i15-14.core.ccr.buffalo.edu:1926221] [[39396,0],21] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+[cpn-i15-17.core.ccr.buffalo.edu:3383339] [[39396,0],25] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+[cpn-i15-30.core.ccr.buffalo.edu:123135] [[39396,0],27] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+[cpn-i15-30:123136] *** An error occurred in MPI_Init_thread
+[cpn-i15-30:123136] *** reported by process [2581856256,28]
+[cpn-i15-30:123136] *** on a NULL communicator
+[cpn-i15-30:123136] *** Unknown error
+[cpn-i15-30:123136] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-30:123136] ***    and potentially your MPI job)
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+[cpn-i15-11:1191275] *** An error occurred in MPI_Init_thread
+[cpn-i15-11:1191275] *** reported by process [2581856256,17]
+[cpn-i15-11:1191275] *** on a NULL communicator
+[cpn-i15-11:1191275] *** Unknown error
+[cpn-i15-11:1191275] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-11:1191275] ***    and potentially your MPI job)
+[cpn-i15-30.core.ccr.buffalo.edu:123137] [[39396,0],29] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+In: PMI_Abort(1, N/A)
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+[cpn-i15-14:1926221] *** An error occurred in MPI_Init_thread
+[cpn-i15-14:1926221] *** reported by process [2581856256,21]
+[cpn-i15-14:1926221] *** on a NULL communicator
+[cpn-i15-14:1926221] *** Unknown error
+[cpn-i15-14:1926221] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-14:1926221] ***    and potentially your MPI job)
+In: PMI_Abort(1, N/A)
+[cpn-i15-30:123137] *** An error occurred in MPI_Init_thread
+[cpn-i15-30:123137] *** reported by process [2581856256,29]
+[cpn-i15-30:123137] *** on a NULL communicator
+[cpn-i15-30:123137] *** Unknown error
+[cpn-i15-30:123137] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-30:123137] ***    and potentially your MPI job)
+In: PMI_Abort(1, N/A)
+[cpn-i15-11.core.ccr.buffalo.edu:1191276] [[39396,0],18] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+In: PMI_Abort(1, N/A)
+[cpn-i15-17.core.ccr.buffalo.edu:3383340] [[39396,0],26] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+[cpn-i15-30:123135] *** An error occurred in MPI_Init_thread
+[cpn-i15-30:123135] *** reported by process [2581856256,27]
+[cpn-i15-30:123135] *** on a NULL communicator
+[cpn-i15-30:123135] *** Unknown error
+[cpn-i15-30:123135] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-30:123135] ***    and potentially your MPI job)
+[cpn-i15-17.core.ccr.buffalo.edu:3383338] [[39396,0],24] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+[cpn-i15-11:1191276] *** An error occurred in MPI_Init_thread
+[cpn-i15-11:1191276] *** reported by process [2581856256,18]
+[cpn-i15-11:1191276] *** on a NULL communicator
+[cpn-i15-11:1191276] *** Unknown error
+[cpn-i15-11:1191276] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-11:1191276] ***    and potentially your MPI job)
+In: PMI_Abort(1, N/A)
+[cpn-i15-17:3383339] *** An error occurred in MPI_Init_thread
+[cpn-i15-17:3383339] *** reported by process [2581856256,25]
+[cpn-i15-17:3383339] *** on a NULL communicator
+[cpn-i15-17:3383339] *** Unknown error
+[cpn-i15-17:3383339] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-17:3383339] ***    and potentially your MPI job)
+[cpn-i15-17:3383340] *** An error occurred in MPI_Init_thread
+[cpn-i15-17:3383340] *** reported by process [2581856256,26]
+[cpn-i15-17:3383340] *** on a NULL communicator
+[cpn-i15-17:3383340] *** Unknown error
+[cpn-i15-17:3383340] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-17:3383340] ***    and potentially your MPI job)
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+In: PMI_Abort(1, N/A)
+[cpn-i15-14.core.ccr.buffalo.edu:1926222] [[39396,0],22] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+[cpn-i15-17:3383338] *** An error occurred in MPI_Init_thread
+[cpn-i15-17:3383338] *** reported by process [2581856256,24]
+[cpn-i15-17:3383338] *** on a NULL communicator
+[cpn-i15-17:3383338] *** Unknown error
+[cpn-i15-17:3383338] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-17:3383338] ***    and potentially your MPI job)
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+[cpn-i15-14:1926222] *** An error occurred in MPI_Init_thread
+[cpn-i15-14:1926222] *** reported by process [2581856256,22]
+[cpn-i15-14:1926222] *** on a NULL communicator
+[cpn-i15-14:1926222] *** Unknown error
+[cpn-i15-14:1926222] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-14:1926222] ***    and potentially your MPI job)
+In: PMI_Abort(1, N/A)
+In: PMI_Abort(1, N/A)
+In: PMI_Abort(1, N/A)
+In: PMI_Abort(1, N/A)
+[cpn-i15-11.core.ccr.buffalo.edu:1191274] [[39396,0],16] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+[cpn-i15-11.core.ccr.buffalo.edu:1191277] [[39396,0],19] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+[cpn-i15-11:1191274] *** An error occurred in MPI_Init_thread
+[cpn-i15-11:1191274] *** reported by process [2581856256,16]
+[cpn-i15-11:1191274] *** on a NULL communicator
+[cpn-i15-11:1191274] *** Unknown error
+[cpn-i15-11:1191274] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-11:1191274] ***    and potentially your MPI job)
+[cpn-i15-11:1191277] *** An error occurred in MPI_Init_thread
+[cpn-i15-11:1191277] *** reported by process [2581856256,19]
+[cpn-i15-11:1191277] *** on a NULL communicator
+[cpn-i15-11:1191277] *** Unknown error
+[cpn-i15-11:1191277] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-11:1191277] ***    and potentially your MPI job)
+[cpn-i15-14.core.ccr.buffalo.edu:1926220] [[39396,0],20] selected pml cm, but peer [[39396,0],0] on cpn-h22-27 selected pml ucx
+--------------------------------------------------------------------------
+MPI_INIT has failed because at least one MPI process is unreachable
+from another.  This *usually* means that an underlying communication
+plugin -- such as a BTL or an MTL -- has either not loaded or not
+allowed itself to be used.  Your MPI job will now abort.
+
+You may wish to try to narrow down the problem;
+
+ * Check the output of ompi_info to see which BTL/MTL plugins are
+   available.
+ * Run your application with MPI_THREAD_SINGLE.
+ * Set the MCA parameter btl_base_verbose to 100 (or mtl_base_verbose,
+   if using MTL-based communications) to see exactly which
+   communication plugins were considered and/or discarded.
+--------------------------------------------------------------------------
+In: PMI_Abort(1, N/A)
+[cpn-i15-14:1926220] *** An error occurred in MPI_Init_thread
+[cpn-i15-14:1926220] *** reported by process [2581856256,20]
+[cpn-i15-14:1926220] *** on a NULL communicator
+[cpn-i15-14:1926220] *** Unknown error
+[cpn-i15-14:1926220] *** MPI_ERRORS_ARE_FATAL (processes in this communicator will now abort,
+[cpn-i15-14:1926220] ***    and potentially your MPI job)
+In: PMI_Abort(1, N/A)
+slurmstepd: error: *** STEP 19962340.0 ON cpn-h22-27 CANCELLED AT 2025-06-05T16:12:51 ***
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: error: cpn-i15-17: tasks 24-26: Killed
+srun: Terminating StepId=19962340.0
+srun: error: cpn-i15-30: tasks 27-29: Killed
+srun: error: cpn-i15-11: tasks 16-19: Killed
+srun: error: cpn-i15-14: tasks 20-23: Killed
+srun: error: cpn-h23-30: tasks 12-15: Killed
+srun: error: cpn-h22-29: tasks 4-7: Killed
+srun: error: cpn-h22-27: tasks 0-3: Killed
+srun: error: cpn-h23-07: tasks 8-11: Killed

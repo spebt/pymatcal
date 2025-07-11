@@ -1,0 +1,77 @@
+--- Job Information ---
+Job ID: 20010205
+Job Name: extract-beams-mpi
+Node List: cpn-q08-05-[01-02],cpn-q08-08-01,cpn-q08-09-02,cpn-q08-13-02,cpn-q08-16-02,cpn-q08-17-02,cpn-q08-27-01,cpn-q08-28-01,cpn-q08-31-[01-02],cpn-q08-32-01
+Number of Nodes: 12
+Number of MPI Tasks: 30
+CPUs per Task: 8
+--- Loading Modules ---
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) ccrenv   2) gentoo/2023.01   3) ccrsoft/2023.01
+--- Modules After Loading ---
+
+Currently Loaded Modules:
+  1) ccrenv                   (H)        7) imkl-fftw/2022.0.1
+  2) gentoo/2023.01           (H,S,os)   8) intel/2022.00      (t)
+  3) ccrsoft/2023.01          (S)        9) gcccore/11.2.0     (H,t)
+  4) intel-compilers/2022.0.1 (H,t)     10) ucx/1.11.2         (H)
+  5) impi/2021.5.0            (m)       11) szip/2.1.1         (H)
+  6) imkl/2022.0.1            (math)    12) hdf5/1.14.1        (io)
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   io:    Input/output software
+   m:     MPI implementations
+   math:  Mathematical libraries
+   os:    Base OS
+   t:     Tools for development
+
+ 
+
+--- Activating Virtual Environment ---
+Python executable: /user/htripath/myenv/bin/python
+--- Setting Intel MPI Environment Variables ---
+I_MPI_F77=ifort
+I_MPI_DEBUG=4
+I_MPI_CC=icc
+I_MPI_ROOT=/cvmfs/soft.ccr.buffalo.edu/versions/2023.01/easybuild/software/avx512/Compiler/intel/2022.0.1/impi/2021.5.0/mpi/2021.5.0
+I_MPI_HYDRA_BOOTSTRAP_EXEC_EXTRA_ARGS=--external-launcher
+I_MPI_FC=ifort
+I_MPI_CXX=icpc
+I_MPI_F90=ifort
+I_MPI_PMI_LIBRARY=/opt/software/slurm/lib64/libpmi2.so
+I_MPI_HYDRA_BOOTSTRAP=slurm
+Current directory: /vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans
+--- Running MPI Python Script for Beam Property Extraction ---
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+srun: error: cpn-q08-08-01: task 7: Exited with exit code 2
+srun: Terminating StepId=20010205.0
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+/user/htripath/myenv/bin/python: can't open file '/vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/extract_beam_properties_mpi.py': [Errno 2] No such file or directory
+slurmstepd: error: *** STEP 20010205.0 ON cpn-q08-05-01 CANCELLED AT 2025-06-11T13:38:59 ***
+srun: error: cpn-q08-27-01: task 19: Terminated
+srun: error: cpn-q08-13-02: tasks 10-11: Exited with exit code 2
+srun: error: cpn-q08-09-02: tasks 8-9: Exited with exit code 2
+srun: error: cpn-q08-05-02: tasks 3-6: Exited with exit code 2
+srun: error: cpn-q08-31-02: tasks 26-27: Terminated
+srun: error: cpn-q08-05-01: tasks 0-2: Terminated
+srun: error: cpn-q08-32-01: tasks 28-29: Terminated
+srun: error: cpn-q08-31-01: tasks 23-25: Terminated
+srun: error: cpn-q08-17-02: tasks 16-18: Terminated
+srun: error: cpn-q08-28-01: tasks 20-22: Terminated
+srun: error: cpn-q08-16-02: tasks 12-15: Terminated
+srun: Force Terminated StepId=20010205.0
+--- Job Finished ---

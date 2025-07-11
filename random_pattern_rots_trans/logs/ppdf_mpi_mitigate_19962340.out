@@ -1,0 +1,45 @@
+SLURM_JOB_ID: 19962340
+Running MPI application...
+cpn-i15-17.core.ccr.buffalo.edu:rank26.python: unknown link speed 0x80
+cpn-i15-17.core.ccr.buffalo.edu:rank25.python: unknown link speed 0x80
+cpn-i15-17.core.ccr.buffalo.edu:rank24.python: unknown link speed 0x80
+cpn-i15-14.core.ccr.buffalo.edu:rank23.python: unknown link speed 0x80
+cpn-i15-14.core.ccr.buffalo.edu:rank20.python: unknown link speed 0x80
+cpn-i15-14.core.ccr.buffalo.edu:rank22.python: unknown link speed 0x80
+cpn-i15-14.core.ccr.buffalo.edu:rank21.python: unknown link speed 0x80
+cpn-i15-14.core.ccr.buffalo.edu:rank23.python: unknown link speed 0x80
+cpn-i15-14.core.ccr.buffalo.edu:rank20.python: unknown link speed 0x80
+[1749154366.519554] [cpn-i15-14:1926223:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+[1749154366.523307] [cpn-i15-14:1926220:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+cpn-i15-14.core.ccr.buffalo.edu:rank22.python: unknown link speed 0x80
+cpn-i15-14.core.ccr.buffalo.edu:rank21.python: unknown link speed 0x80
+[1749154366.535985] [cpn-i15-14:1926222:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+[1749154366.536250] [cpn-i15-14:1926221:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+cpn-i15-17.core.ccr.buffalo.edu:rank25.python: unknown link speed 0x80
+[1749154366.653221] [cpn-i15-17:3383339:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+cpn-i15-17.core.ccr.buffalo.edu:rank26.python: unknown link speed 0x80
+cpn-i15-17.core.ccr.buffalo.edu:rank24.python: unknown link speed 0x80
+[1749154366.698056] [cpn-i15-17:3383340:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+[1749154366.698379] [cpn-i15-17:3383338:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+cpn-i15-30.core.ccr.buffalo.edu:rank29.python: unknown link speed 0x80
+cpn-i15-30.core.ccr.buffalo.edu:rank28.python: unknown link speed 0x80
+cpn-i15-30.core.ccr.buffalo.edu:rank27.python: unknown link speed 0x80
+cpn-i15-30.core.ccr.buffalo.edu:rank29.python: unknown link speed 0x80
+cpn-i15-30.core.ccr.buffalo.edu:rank27.python: unknown link speed 0x80
+cpn-i15-30.core.ccr.buffalo.edu:rank28.python: unknown link speed 0x80
+[1749154367.093838] [cpn-i15-30:123137:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+[1749154367.093886] [cpn-i15-30:123135:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+[1749154367.094617] [cpn-i15-30:123136:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+cpn-i15-11.core.ccr.buffalo.edu:rank19.python: unknown link speed 0x80
+cpn-i15-11.core.ccr.buffalo.edu:rank16.python: unknown link speed 0x80
+cpn-i15-11.core.ccr.buffalo.edu:rank18.python: unknown link speed 0x80
+cpn-i15-11.core.ccr.buffalo.edu:rank17.python: unknown link speed 0x80
+cpn-i15-11.core.ccr.buffalo.edu:rank19.python: unknown link speed 0x80
+[1749154367.546251] [cpn-i15-11:1191277:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+cpn-i15-11.core.ccr.buffalo.edu:rank17.python: unknown link speed 0x80
+[1749154367.572307] [cpn-i15-11:1191275:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+cpn-i15-11.core.ccr.buffalo.edu:rank16.python: unknown link speed 0x80
+cpn-i15-11.core.ccr.buffalo.edu:rank18.python: unknown link speed 0x80
+[1749154367.591564] [cpn-i15-11:1191274:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+[1749154367.594822] [cpn-i15-11:1191276:0]        ib_iface.c:1673 UCX  ERROR Invalid active_speed on ibp189s0:1: 128
+Job finished.

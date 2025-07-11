@@ -1,0 +1,10 @@
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] match_arg (../../../../../src/pm/i_hydra/libhydra/arg/hydra_arg.c:91): unrecognized argument mca
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] Similar arguments:
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] 	 aps
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] 	 mps
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] 	 dac
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] 	 tva
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] 	 gdba
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] HYD_arg_parse_array (../../../../../src/pm/i_hydra/libhydra/arg/hydra_arg.c:128): argument matching returned error
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] mpiexec_get_parameters (../../../../../src/pm/i_hydra/mpiexec/mpiexec_params.c:1359): error parsing input array
+[mpiexec@cpn-h25-04.core.ccr.buffalo.edu] main (../../../../../src/pm/i_hydra/mpiexec/mpiexec.c:1784): error parsing parameters

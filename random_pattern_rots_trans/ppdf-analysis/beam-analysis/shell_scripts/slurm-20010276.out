@@ -1,0 +1,96 @@
+--- Job Information ---
+Job ID: 20010276
+Job Name: extract-beams-mpi
+Node List: cpn-q08-05-[01-02],cpn-q08-08-01,cpn-q08-09-02,cpn-q08-13-02,cpn-q08-16-[01-02],cpn-q08-17-02,cpn-q08-27-01,cpn-q08-28-01,cpn-q08-31-[01-02],cpn-q08-32-01
+Number of Nodes: 13
+Number of MPI Tasks: 30
+CPUs per Task: 8
+--- Loading Modules ---
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) ccrenv   2) gentoo/2023.01   3) ccrsoft/2023.01
+--- Modules After Loading ---
+
+Currently Loaded Modules:
+  1) ccrenv                   (H)        7) imkl-fftw/2022.0.1
+  2) gentoo/2023.01           (H,S,os)   8) intel/2022.00      (t)
+  3) ccrsoft/2023.01          (S)        9) gcccore/11.2.0     (H,t)
+  4) intel-compilers/2022.0.1 (H,t)     10) ucx/1.11.2         (H)
+  5) impi/2021.5.0            (m)       11) szip/2.1.1         (H)
+  6) imkl/2022.0.1            (math)    12) hdf5/1.14.1        (io)
+
+  Where:
+   H:     Hidden Module
+   S:     Module is Sticky, requires --force to unload or purge
+   io:    Input/output software
+   m:     MPI implementations
+   math:  Mathematical libraries
+   os:    Base OS
+   t:     Tools for development
+
+ 
+
+--- Activating Virtual Environment ---
+Python executable: /user/htripath/myenv/bin/python
+--- Setting Intel MPI Environment Variables ---
+I_MPI_F77=ifort
+I_MPI_DEBUG=4
+I_MPI_CC=icc
+I_MPI_ROOT=/cvmfs/soft.ccr.buffalo.edu/versions/2023.01/easybuild/software/avx512/Compiler/intel/2022.0.1/impi/2021.5.0/mpi/2021.5.0
+I_MPI_HYDRA_BOOTSTRAP_EXEC_EXTRA_ARGS=--external-launcher
+I_MPI_FC=ifort
+I_MPI_CXX=icpc
+I_MPI_F90=ifort
+I_MPI_PMI_LIBRARY=/opt/software/slurm/lib64/libpmi2.so
+I_MPI_HYDRA_BOOTSTRAP=slurm
+Current directory: /vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans/ppdf-analysis/beam-analysis
+--- Running MPI Python Script for Beam Property Extraction ---
+[cpn-q08-05-01.core.ccr.buffalo.edu:1088629] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-16-01.core.ccr.buffalo.edu:599025] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-08-01.core.ccr.buffalo.edu:863435] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-28-01.core.ccr.buffalo.edu:2844029] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-13-02.core.ccr.buffalo.edu:609185] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-27-01.core.ccr.buffalo.edu:1362249] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-13-02.core.ccr.buffalo.edu:609184] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-16-02.core.ccr.buffalo.edu:548568] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-09-02.core.ccr.buffalo.edu:822318] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-28-01.core.ccr.buffalo.edu:2844028] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-31-01.core.ccr.buffalo.edu:2596550] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-05-02.core.ccr.buffalo.edu:758450] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-05-02.core.ccr.buffalo.edu:758452] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-05-02.core.ccr.buffalo.edu:758451] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-32-01.core.ccr.buffalo.edu:3517279] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-16-02.core.ccr.buffalo.edu:548567] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-16-02.core.ccr.buffalo.edu:548566] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-32-01.core.ccr.buffalo.edu:3517282] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-05-02.core.ccr.buffalo.edu:758453] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-17-02.core.ccr.buffalo.edu:661334] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-32-01.core.ccr.buffalo.edu:3517280] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-32-01.core.ccr.buffalo.edu:3517281] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-17-02.core.ccr.buffalo.edu:661333] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-09-02.core.ccr.buffalo.edu:822317] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-16-02.core.ccr.buffalo.edu:548565] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-31-01.core.ccr.buffalo.edu:2596548] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-31-01.core.ccr.buffalo.edu:2596549] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-17-02.core.ccr.buffalo.edu:661332] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-31-02.core.ccr.buffalo.edu:3514044] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+[cpn-q08-31-02.core.ccr.buffalo.edu:3514045] common_ucx.c:362  Warning: UCX is unable to handle VM_UNMAP event. This may cause performance degradation or data corruption. Pls try adding --mca opal_common_ucx_opal_mem_hooks 1 to mpirun/oshrun command line to resolve this issue.
+slurmstepd: error: Detected 1 oom_kill event in StepId=20010276.0. Some of the step tasks have been OOM Killed.
+srun: error: cpn-q08-09-02: task 7: Out Of Memory
+srun: Terminating StepId=20010276.0
+slurmstepd: error: *** STEP 20010276.0 ON cpn-q08-05-01 CANCELLED AT 2025-06-11T13:55:29 ***
+srun: error: cpn-q08-05-01: task 0: Terminated
+slurmstepd: error: Detected 1 oom_kill event in StepId=20010276.0. Some of the step tasks have been OOM Killed.
+slurmstepd: error: Detected 1 oom_kill event in StepId=20010276.0. Some of the step tasks have been OOM Killed.
+slurmstepd: error: Detected 1 oom_kill event in StepId=20010276.0. Some of the step tasks have been OOM Killed.
+slurmstepd: error: Detected 1 oom_kill event in StepId=20010276.0. Some of the step tasks have been OOM Killed.
+slurmstepd: error: Detected 1 oom_kill event in StepId=20010276.0. Some of the step tasks have been OOM Killed.
+srun: error: cpn-q08-27-01: task 18: Terminated
+slurmstepd: error: Detected 1 oom_kill event in StepId=20010276.0. Some of the step tasks have been OOM Killed.
+slurmstepd: error: Detected 1 oom_kill event in StepId=20010276.0. Some of the step tasks have been OOM Killed.
+srun: error: cpn-q08-13-02: tasks 8-9: Terminated
+srun: error: cpn-q08-28-01: tasks 19-20: Terminated
+srun: error: cpn-q08-31-02: tasks 24-25: Terminated
+srun: Force Terminated StepId=20010276.0
+--- Job Finished ---

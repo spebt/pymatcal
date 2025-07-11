@@ -1,0 +1,89 @@
+#!/bin/bash -l
+# ===============================================
+# MPI Parallel PPDF Calculation (600 positions)
+# Using Intel MPI on UB HPC general-compute nodes
+# ===============================================
+
+# --- SLURM Resource Requests ---
+# We need 30 MPI tasks to process 600 positions (approx. 20 positions per task)
+#SBATCH --ntasks=30
+
+# Each MPI task will use PyTorch with 8 threads.
+#SBATCH --cpus-per-task=8
+
+# Memory: Each task might need ~30GB.
+# With 8 CPUs/task, 30GB/task means ~3.75GB/CPU. Request 4GB/CPU.
+# Total per task: 8 cpus * 4GB/cpu = 32GB.
+#SBATCH --mem-per-cpu=4G
+# Alternative using --mem:
+# If nodes are, say, 128GB, and we want max 4 tasks/node (4*32GB = 128GB):
+# #SBATCH --ntasks-per-node=4 # If you want to explicitly control tasks per node
+# #SBATCH --nodes=8 # ceil(30 tasks / 4 tasks_per_node) = 8 nodes
+# #SBATCH --mem=125G # Memory per node (ensure nodes with this much are available)
+# For now, --mem-per-cpu is often more flexible if your --constraint gives suitable nodes.
+
+# Constraint for homogeneous nodes, which seemed to help previously
+#SBATCH --constraint="CASCADE-LAKE-IB"
+
+#   Job Name
+#SBATCH --job-name="ppdf-mpi-600pos"
+
+#   Email Notifications (adjust as needed)
+#SBATCH --mail-user=myemailaddress@institution.edu
+#SBATCH --mail-type=FAIL,END # Notify on failure or completion
+
+#   Cluster, Partition, QOS
+#SBATCH --partition=general-compute
+#SBATCH --qos=nih # Or your appropriate QOS
+#SBATCH --cluster=ub-hpc
+
+# --- Environment Setup ---
+echo "--- Job Information ---"
+echo "Job ID: $SLURM_JOB_ID"
+echo "Job Name: $SLURM_JOB_NAME"
+echo "Node List: $SLURM_JOB_NODELIST"
+echo "Number of Nodes: $SLURM_JOB_NUM_NODES"
+echo "Number of Tasks: $SLURM_NTASKS"
+echo "CPUs per Task: $SLURM_CPUS_PER_TASK"
+echo "Memory per CPU: $(scontrol show job $SLURM_JOB_ID | grep MemPerCPU)" # Check actual allocated
+
+echo "--- Loading Modules ---"
+module purge # Good practice, though your simpler script didn't use it
+module load intel gcccore/11.2.0 hdf5/1.14.1
+echo "--- Modules After Loading ---"
+module list
+
+# Activate your virtual environment
+echo "--- Activating Virtual Environment ---"
+source ~/myenv/bin/activate
+echo "Python executable: $(which python)"
+echo "mpi4py version: $(python -m pip show mpi4py | grep Version)"
+echo "mpi4py location: $(python -m pip show mpi4py | grep Location)"
+
+
+# --- Intel MPI Configuration ---
+echo "--- Setting Intel MPI Environment Variables ---"
+export I_MPI_DEBUG=4 # Useful debug level for MPI
+export I_MPI_PMI_LIBRARY=/opt/software/slurm/lib64/libpmi2.so # For Slurm integration
+# Given the previous success, we might not need to force I_MPI_FABRICS
+# If issues reappear, uncomment and try one of these:
+# export I_MPI_FABRICS=shm:ofi
+# export I_MPI_FABRICS=tcp # As a last resort for basic connectivity
+
+env | grep I_MPI # Display Intel MPI vars
+
+# --- Execution ---
+# Navigate to the directory containing your MPI Python script
+# This is where ppdf_calculation_mpi.py should be
+cd /vscratch/grp-rutaoyao/Harsh/ALL_CONFIGS/random_pattern_rots_trans
+echo "Current directory: $(pwd)"
+echo "Listing files in current directory:"
+ls -l
+
+echo "--- Running MPI Python Script ---"
+# Ensure this is your MPI-enabled Python script
+# The one that contains "from mpi4py import MPI"
+# and logic to distribute work based on rank and size.
+srun --mpi=pmi2 python ppdf_mpi.py
+
+echo "--- Job Finished ---"
