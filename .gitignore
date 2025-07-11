@@ -12,3 +12,6 @@ random_pattern_rots_trans/scanner_layouts_508640ff8dc59f67dd884fdbc89ee122/
 random_pattern_rots_trans/ppdf-analysis/beam-analysis/output/asci_histogram_*.hdf5
 random_pattern_rots_trans/ppdf-analysis/beam-analysis/output/beams_masks_*.hdf5
 random_pattern_rots_trans/ppdf-analysis/beam-analysis/output/beams_properties_*.hdf5
+
+# Rule for nonmux folder
+nonmux/outputs_new/
