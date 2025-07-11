@@ -1,2 +1,8 @@
 mph_biconical/outputs/
 ordered/sysmats/
+
+# Rules for the random_pattern folder
+random_pattern/scanner_layouts_77faff53af5863ca146878c7c496c75e/
+random_pattern/ppdf-analysis/beam-analysis/output/beams_properties_*.hdf5
+random_pattern/ppdf-analysis/beam-analysis/output/beams_masks_*.hdf5
+random_pattern/ppdf-analysis/beam-analysis/output/asci_histogram_*.hdf5

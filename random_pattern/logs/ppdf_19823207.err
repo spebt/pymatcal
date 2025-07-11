@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/vscratch/grp-rutaoyao/Harsh/new_config_mic/ppdf_calculation_no_mpi_layouts.py", line 51, in <module>
+    scanner_layouts_data, filename_unique_id = load_scanner_layouts(filename)
+  File "/vscratch/grp-rutaoyao/Harsh/new_config_mic/ppdf_calculation_no_mpi_layouts.py", line 20, in load_scanner_layouts
+    raise FileNotFoundError(f"File {filename} does not exist.")
+FileNotFoundError: File scanner_layouts/scanner_layouts_7fc48986b29564992088d8d8b201b96c.tensor does not exist.

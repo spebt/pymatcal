@@ -1,0 +1,51 @@
+#!/bin/bash -l
+# ===============================================
+# Debug MPI Parallel PyMatcal PPDF calculation on
+# UB HPC general-compute nodes
+# ===============================================
+#  Note: You can not request too many nodes in debug partition
+
+
+#  Request number of tasks and CPUs per task
+
+#SBATCH -n24
+#SBATCH --cpus-per-task=16
+#SBATCH --mem-per-cpu=2048M
+#SBATCH --constraint="CASCADE-LAKE-IB"
+
+
+#   Give your job a name, so you can recognize it in the queue
+#SBATCH --job-name="debug-pymatcal-impi"
+
+#   Tell slurm where to send emails about this job
+#SBATCH --mail-user=myemailaddress@institution.edu
+
+#   Tell slurm the types of emails to send.
+#   Options: NONE, BEGIN, END, FAIL, ALL
+
+#SBATCH --mail-type=NONE
+
+#   Tell Slurm which cluster, partition and qos to use to schedule this job.
+#SBATCH --partition=general-compute
+#SBATCH --qos=nih
+#SBATCH --cluster=ub-hpc
+
+# load modules (keep these if required for MPI support)
+module load intel gcccore/11.2.0 hdf5/1.14.1
+
+# Virtual environment activation
+source ~/myenv/bin/activate
+
+# Setup the Intel MPI
+export I_MPI_DEBUG=4 # nice debug level, spits out useful info
+export I_MPI_PMI_LIBRARY=/opt/software/slurm/lib64/libpmi2.so
+
+# Navigate to code directory
+cd /vscratch/grp-rutaoyao/Harsh/MPI/600rots
+
+# Run the program
+echo "Number of nodes allocated:" "$SLURM_JOB_NUM_NODES"
+PYMATCAL_DIR="/vscratch/grp-rutaoyao/Harsh/new_config_mic"  # Adjust path based on your actual setup
+
+# Use srun with Python from virtual environment
+srun --mpi=pmi2 python "$PYMATCAL_DIR"/ppdf_calculation_no_mpi_layouts.py 
