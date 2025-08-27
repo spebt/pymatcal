@@ -40,14 +40,14 @@ if __name__ == "__main__":
         "center": tensor([0.0, 0.0]),
     }
     # Load the scanner layouts
-    filename = "scanner_layouts/scanner_layouts_77faff53af5863ca146878c7c496c75e.tensor"
+    filename = "../data/scanner_layouts/mph_hourglass_multi_position.tensor"
     scanner_layouts_data, filename_unique_id = load_scanner_layouts(filename)
 
-    # n_positions = len(scanner_layouts_data)
-    n_positions = 2
+    n_positions = len(scanner_layouts_data)
+    # n_positions = 6
     print(f"Number of positions: {n_positions}")
 
-    output_hdf5_dir = f"scanner_layouts_{filename_unique_id:s}"
+    output_hdf5_dir = f"../data/outputs/"
     if not os.path.exists(output_hdf5_dir):
         os.makedirs(output_hdf5_dir)
 
@@ -62,8 +62,8 @@ if __name__ == "__main__":
             "detector units"
         ].to("cpu")
 
-        # n_xtals = xtal_verts_2d.shape[0]
-        n_xtals = 20
+        n_xtals = xtal_verts_2d.shape[0]
+        # n_xtals = 20
         geom_dict = get_geom_dict(plate_verts_2d, xtal_verts_2d, fov_dict)
 
         fov_n_pixels = int(fov_dict["n_pixels"].prod())
@@ -81,7 +81,6 @@ if __name__ == "__main__":
             "ppdfs", shape=(n_xtals, fov_n_pixels), dtype="f"
         )
         for idx in range(n_xtals):
-            # progress.console.print(f"Current idx: {idx}")
 
             start_time = time.time()
             try:
