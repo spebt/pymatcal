@@ -82,7 +82,7 @@ def main(
 
     mu_dict = {"plate": 3.5, "crystal": 0.475}  # mm^-1
 
-    fov_dict = fov_tensor_dict((512, 512), (128, 128), (0.0, 0.0), (8, 8))
+    fov_dict = fov_tensor_dict((512, 512), (128, 128), (0.0, 0.0), (3, 3))
 
     sfov_pxs_ids, sfov_pxs_coords, sfov_corners_batch = sfov_properties(
         fov_dict
@@ -111,7 +111,7 @@ def main(
     size = dist.get_world_size()
     args = (
         sfov_pxs_coords,
-        sfov_corners_batch,
+        # sfov_corners_batch,
         plate_objects_vertices,
         crystal_objects_vertices,
         plate_objects_edges,
@@ -152,11 +152,18 @@ if __name__ == "__main__":
             "Usage: python test_ppdf_distributed_local.py <layouts_dir>/<layouts_filename>"
         )
         sys.exit(1)
-    layouts_dir = sys.argv[1].split("/")[0]
-    layouts_filename = sys.argv[1].split("/")[-1]
+    
+    ls = sys.argv[1].split("/")
+    n = len(ls)
+    layouts_dir = ""
+    for x in ls[:n-1]:
+        layouts_dir = os.path.join(layouts_dir, x)
+    
+    layouts_filename = ls[-1]
 
     # Ensure the layouts file exists
     if not os.path.exists(os.path.join(layouts_dir, layouts_filename)):
+        print(os.path.join(layouts_dir, layouts_filename))
         print(
             f"File {layouts_filename} does not exist in directory {layouts_dir}."
         )

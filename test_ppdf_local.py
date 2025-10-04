@@ -3,7 +3,7 @@ import os
 import h5py
 from torch import device
 from torch import float64 as torch_float64
-from torch import get_num_threads, tensor, zeros, tensor
+from torch import get_num_threads, tensor, zeros, tensor, arange
 
 from scanner_modeling._raytracer_2d._local_functions import (
     ppdf_2d_local,
@@ -22,7 +22,7 @@ if __name__ == "__main__":
     import time
     default_device = device("cpu")
     scanner_layout_file_relative_path = (
-        "scanner_layouts/scanner_layouts_e1531c3444e51439add2f18f5714fc50.tensor"
+        "../data/scanner_layouts/mph_hourglass_multi_position.tensor"
     )
     # Get the dir and filename from the relative path
     scanner_layout_dir = os.path.dirname(scanner_layout_file_relative_path)
@@ -36,10 +36,9 @@ if __name__ == "__main__":
     # mu_dict = {"plate": 3.5, "crystal": 0.475}  # mm^-1
     mu_dict = tensor([3.5, 0.475], device=default_device)
 
-    fov_dict = fov_tensor_dict((512, 512), (128, 128), (0.0, 0.0), (8, 8))
+    fov_dict = fov_tensor_dict((512, 512), (128, 128), (0.0, 0.0), (3, 3))
 
-    # crystal_n_subs = (5, 5)
-    crystal_n_subs = (9, 9)
+    crystal_n_subs = (3, 3)
     sfov_pxs_ids, sfov_pixels_batch, sfov_corners_batch = sfov_properties(fov_dict)
     fov_n_pxs = int(fov_dict["n pixels"].prod())
 
@@ -68,9 +67,15 @@ if __name__ == "__main__":
         crystal_objects_edges,
     ) = load_scanner_geometry_from_layout(layout_idx, scanner_layouts)
 
-    crystal_idx_tensor = tensor([234])
+    # Get the total number of crystals from the shape of the loaded tensor
+    n_crystals_total = crystal_objects_vertices.shape[0]
+    print(f"Found {n_crystals_total} crystals in layout {layout_idx}.")
+    
+    # Create a tensor containing all indices from 0 to n_crystals_total - 1
+    crystal_idx_tensor = arange(n_crystals_total)
 
     n_crystals = int(crystal_idx_tensor.shape[0])
+
     # Create the dataset in the h5py file
     ppdf_dataset = h5file.create_dataset("ppdfs", (n_crystals, fov_n_pxs), dtype="f")
 

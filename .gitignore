@@ -178,3 +178,6 @@ examples/panel_5.yaml
 /*.tensor
 /*.png
 data/
+
+*.out
+*.err
