@@ -112,7 +112,8 @@ def line_segments_t(
         (va[:, :, 0] * v3[:, :, 1] - va[:, :, 1] * v3[:, :, 0]) / det,
         -1,
     )
-    t = where((s <= 1) * (s >= 0), t, -1).clamp(0, 1)
+    valid = (s >= 0) & (s <= 1) & (t >= 0) & (t <= 1)
+    t = where(valid, t, -1.0)
     return t
 
 
@@ -240,7 +241,8 @@ def rays_edges_t_subdivisions(
         (va[:, :, :, 0] * v3[:, :, :, 1] - va[:, :, :, 1] * v3[:, :, :, 0]) / det,
         -1,
     )
-    t = where((s <= 1) * (s >= 0), t, -1).clamp(0, 1)
+    valid = (s >= 0) & (s <= 1) & (t >= 0) & (t <= 1)
+    t = where(valid, t, -1.0)
     return t
 
 
@@ -367,6 +369,10 @@ def reduced_edges_2d_local(
         )
     )
 
+    reduced_crystal_objects_ids = reduced_crystal_objects_ids[
+        reduced_crystal_objects_ids != crystal_idx
+    ]
+
     return (
         plate_objects_edges[reduced_plate_objects_ids],
         crystal_objects_edges[reduced_crystal_objects_ids],
@@ -473,6 +479,6 @@ def ppdf_2d_local(
     angular_term = subdivision_rads_span / (2 * pi)
     return (
         (-sum_plate_exponent - sum_crystal_exponent).exp()
-        * (subdivision_exponent.exp() - 1)
+        * (1 - (-subdivision_exponent).exp())
         * angular_term
     ).sum(dim=1)

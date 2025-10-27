@@ -19,16 +19,13 @@ def three_p_cross(points: Tensor) -> Tensor:
 
 
 def sort_points_by_xy_2d_batch(points_batch: Tensor, main_axis: int = 0) -> Tensor:
-    # Get unique x values
-    unique_x, unique_x_index = torch_unique(
-        points_batch[:, :, 0], return_inverse=True, sorted=True
-    )
-    unique_y, unique_y_index = torch_unique(
-        points_batch[:, :, 1], return_inverse=True, sorted=True
-    )
-    # Sort the indices based on x and y values
-    indices_by_xy = argsort(unique_x_index * 100 + unique_y_index)
-    return points_batch.gather(1, indices_by_xy.unsqueeze(-1).expand(-1, -1, 2))
+    # Compute global unique ranks (across batch) and a safe base
+    _, ix = torch_unique(points_batch[:, :, 0], return_inverse=True, sorted=True)
+    _, iy = torch_unique(points_batch[:, :, 1], return_inverse=True, sorted=True)
+    base = iy.max().item() + 1
+    key = ix * base + iy  # shape (B, N)
+    order = argsort(key, dim=1)
+    return points_batch.gather(1, order.unsqueeze(-1).expand(-1, -1, 2))
 
 
 def sort_points_by_rad_2d_batch(points_batch: Tensor) -> Tensor:
@@ -74,12 +71,13 @@ def sort_points_by_rad_2d(points: Tensor) -> Tensor:
 
 
 def sort_points_by_xy(points: Tensor) -> Tensor:
-    # Get unique x values
-    _, unique_x_index = torch_unique(points[:, 0], return_inverse=True, sorted=True)
-    _, unique_y_index = torch_unique(points[:, 1], return_inverse=True, sorted=True)
-    # Sort the indices based on x and y values
-    indices_by_xy = argsort(unique_x_index * 100 + unique_y_index)
-    return points[indices_by_xy]
+    # Lexicographic sort by (x, y) using unique ranks with a safe base
+    _, ix = torch_unique(points[:, 0], return_inverse=True, sorted=True)
+    _, iy = torch_unique(points[:, 1], return_inverse=True, sorted=True)
+    base = iy.max().item() + 1  # safe base (> max rank of y)
+    key = ix * base + iy
+    order = argsort(key)
+    return points[order]
 
 
 def sort_points_for_hull_2d(points: Tensor):
