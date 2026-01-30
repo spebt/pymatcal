@@ -33,7 +33,7 @@ echo "=========================================================="
 # Load necessary modules (if any, e.g., module load anaconda3)
 
 # Activate your Python environment
-source ../venv/bin/activate
+source /vscratch/grp-rutaoyao/sid/venv/bin/activate
 
 # --- Execute the Python Script ---
 # The script is called with the Slurm array task ID as its argument.

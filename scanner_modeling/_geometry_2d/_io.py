@@ -15,7 +15,7 @@ def load_scanner_layouts(
         print(f"File {full_path} does not exist.")
         raise FileNotFoundError(f"File {full_path} does not exist.")
     filename_unique_id = filename.split(".")[0].split("_")[-1]
-    scanner_layouts_data = torch_load(full_path, weights_only=True)[keyword]
+    scanner_layouts_data = torch_load(full_path, weights_only=False)[keyword]
     return scanner_layouts_data, filename_unique_id
 
 
