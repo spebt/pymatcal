@@ -1,0 +1,16 @@
+# Paths
+paths:
+  input_tensor: "../data/scanner_layouts/mph_hourglass_single_position_base_2mm_transformed_5custom_rot_8pos_elliptical.tensor"
+  output_dir: "../data/mph_512pxx512px_128x128_8_translations_5_rotations_1deg_col_subvoxel_subdiv_2mm/outputs/"
+
+# FOV Configuration
+fov:
+  pixels: [512, 512]
+  size_mm: [128, 128]
+  center_mm: [0.0, 0.0]
+  subdivisions: [3, 3] # Sub-FOV divisions
+
+# Crystal Configuration
+scanner:
+  crystal_subdivisions: [3, 3] # Sub-crystal divisions
+  mu_values: [3.5, 0.475]      # [mu_crystal, mu_plate]
