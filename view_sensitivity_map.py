@@ -45,7 +45,7 @@ def create_and_plot_sensitivity_histogram(sensitivity_map: np.ndarray, output_di
 
 if __name__ == "__main__":
     # --- Configuration ---
-    ppdf_files_base_dir = "../data/mph_512pxx512px_128x128_8_translations_5custom_rotations_subvoxel_subdiv/outputs"
+    ppdf_files_base_dir = "/vscratch/grp-rutaoyao/sid/data-test/mph_hourglass_single_position_base_3mm_18pinholes_rotated_elliptical/outputs/"
     num_layouts_to_load = 40
     layout_indices = list(range(num_layouts_to_load))
 
