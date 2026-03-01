@@ -446,6 +446,10 @@ def ppdf_2d_local(
     pa_batch = sfov_pixels_batch[sfov_idx]
     pb_batch = sub_crystals_vertices.mean(dim=1)
 
+    n_pix = pa_batch.shape[0]
+    n_subs = pb_batch.shape[0]
+
+    # Original rays (pixel -> centroid) for external attenuation and angular span
     rays = rays_2d_batch(pa_batch, pb_batch)
     rays_plates_transmission_t = line_segments_t(
         rays.view(-1, 2, 2), reduced_plate_edges.view(-1, 2, 2)
@@ -455,18 +459,46 @@ def ppdf_2d_local(
         rays.view(-1, 2, 2), reduced_crystal_edges.view(-1, 2, 2)
     )
 
-    rays_sub_crystal_t = rays_edges_t_subdivisions(rays, sub_crystals_edges)
+    # --- FIX 1: Target sub path length via extended rays ---
+    # Original rays end at the centroid (inside the target sub), giving only
+    # 1 valid edge intersection -> wrong path length. Extended rays pass
+    # fully through the target sub, giving correct entry+exit intersections.
+    # endpoint = 2 * centroid - pixel (same direction, double distance)
+    pb_ext = (
+        2 * pb_batch.unsqueeze(0).expand(n_pix, -1, -1)
+        - pa_batch.unsqueeze(1).expand(-1, n_subs, -1)
+    )
+    rays_ext = stack(
+        (pa_batch.unsqueeze(1).expand(-1, n_subs, -1), pb_ext), dim=2
+    )
+    rays_ext_sub_t = rays_edges_t_subdivisions(rays_ext, sub_crystals_edges)
+    intersection_length_target = rays_intersection_lengths(
+        rays_ext, rays_ext_sub_t
+    ).view(n_pix, n_subs)
 
+    # --- FIX 2: Self-attenuation through sibling subdivisions ---
+    # Original rays vs ALL sub edges. Off-diagonal entries give correct
+    # path through siblings before the target (subs after target give 0
+    # because the ray doesn't reach them).
+    all_sub_edges_flat = sub_crystals_edges.view(-1, 2, 2)
+    rays_all_subs_t = line_segments_t(
+        rays.view(-1, 2, 2), all_sub_edges_flat
+    )
+    intersection_length_all_subs = rays_intersection_lengths(
+        rays, rays_all_subs_t
+    ).view(n_pix, n_subs, n_subs)
+
+    diag_idx = arange(n_subs)
+    wrong_diagonal = intersection_length_all_subs[:, diag_idx, diag_idx]
+    self_atten_lengths = intersection_length_all_subs.sum(dim=2) - wrong_diagonal
+
+    # --- External attenuation (plates + other crystals) ---
     intersection_length_plates = rays_intersection_lengths(
         rays, rays_plates_transmission_t
     ).view(rays.shape[0], rays.shape[1], -1)
     intersection_length_crystals = rays_intersection_lengths(
         rays, rays_crystal_transmission_t
     ).view(rays.shape[0], rays.shape[1], -1)
-
-    intersection_length_subdivisions = rays_intersection_lengths(
-        rays, rays_sub_crystal_t
-    ).view(rays.shape[0], rays.shape[1])
 
     subdivision_rads_span = polygon_to_points_angular_span_2d_batch(
         sub_crystals_vertices, pa_batch
@@ -475,10 +507,11 @@ def ppdf_2d_local(
     sum_plate_exponent = (intersection_length_plates * mu_dict[0]).sum(dim=2)
     sum_crystal_exponent = (intersection_length_crystals * mu_dict[1]).sum(dim=2)
 
-    subdivision_exponent = intersection_length_subdivisions * mu_dict[1]
+    subdivision_exponent = intersection_length_target * mu_dict[1]
+    self_atten_exponent = self_atten_lengths * mu_dict[1]
     angular_term = subdivision_rads_span / (2 * pi)
     return (
-        (-sum_plate_exponent - sum_crystal_exponent).exp()
+        (-sum_plate_exponent - sum_crystal_exponent - self_atten_exponent).exp()
         * (1 - (-subdivision_exponent).exp())
         * angular_term
     ).sum(dim=1)
