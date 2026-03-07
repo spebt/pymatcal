@@ -1,7 +1,7 @@
 # Paths
 paths:
-  input_tensor: "/vscratch/grp-rutaoyao/sid/data-test/scanner_layouts/mph_hourglass_single_position_base_3mm_18pinholes_rotated_elliptical.tensor"
-  output_dir: "/vscratch/grp-rutaoyao/sid/data-test/mph_hourglass_single_position_base_3mm_18pinholes_rotated_elliptical/outputs/"
+  input_tensor: "/vscratch/grp-rutaoyao/sid/data/scanner_layouts/mph_hourglass_single_position_base_2mm_18pinholes_rotated_elliptical.tensor"
+  output_dir: "/vscratch/grp-rutaoyao/sid/data/mph_hourglass_single_position_base_2mm_18pinholes_rotated_elliptical_comp2/outputs/"
 
 # FOV Configuration
 fov:

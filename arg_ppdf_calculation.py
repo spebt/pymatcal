@@ -5,6 +5,8 @@ import h5py
 import yaml
 import torch
 import argparse
+import numpy as np
+import scipy.sparse as sp
 from torch import device, arange, tensor, get_num_threads
 
 from scanner_modeling._raytracer_2d._local_functions import (
@@ -36,12 +38,9 @@ def load_config(config_path: str) -> dict:
     with open(config_path, 'r') as f:
         return yaml.safe_load(f)
 
-def calculate_ppdf_for_layout(layout_idx: int, config_path: str):
+def calculate_ppdf_for_layout(layout_idx: int, config_path: str, save_sparse: bool = True):
     """
     Calculates the PPDF for a specific layout index.
-    
-    This function uses the configuration file to define system geometry,
-    physics parameters, and file paths.
     """
     start_time = time.time()
     
@@ -49,8 +48,13 @@ def calculate_ppdf_for_layout(layout_idx: int, config_path: str):
     config = load_config(config_path)
     print(f"--- Starting PPDF calculation for Layout: {layout_idx} ---")
     print(f"--- Using Configuration: {config_path} ---")
+    print(f"--- Output Format: {'Sparse (Optimized)' if save_sparse else 'Dense (Legacy)'} ---")
 
-    # --- 2. Setup Parameters from Config ---
+    # Sync PyTorch threads with SLURM allocation to prevent overhead
+    num_threads = int(os.environ.get('SLURM_CPUS_PER_TASK', 1))
+    torch.set_num_threads(num_threads)
+
+    # 2. Setup Parameters from Config
     default_device = device("cpu")
     
     input_tensor_path = config['paths']['input_tensor']
@@ -92,7 +96,7 @@ def calculate_ppdf_for_layout(layout_idx: int, config_path: str):
     print(f"System Matrix: {config['fov']['pixels'][0]}x{config['fov']['pixels'][1]} px")
     print(f"Hardware: PyTorch using {get_num_threads()} threads.")
 
-    # --- 3. Geometry Preparation ---
+    # 3. Geometry Preparation
     (
         plate_objects_vertices, crystal_objects_vertices,
         plate_objects_edges, crystal_objects_edges,
@@ -101,38 +105,55 @@ def calculate_ppdf_for_layout(layout_idx: int, config_path: str):
     n_crystals = crystal_objects_vertices.shape[0]
     crystal_idx_tensor = arange(n_crystals)
 
-    # --- 4. Iterative Calculation and HDF5 Serialization ---
+    # 4. Iterative Calculation
     os.makedirs(output_dir, exist_ok=True)
+    matrix_rows = []
+
+    for dataset_idx, crystal_idx_tensor_val in enumerate(crystal_idx_tensor):
+        crystal_idx = int(crystal_idx_tensor_val.item())
+        dense_row = np.zeros(fov_n_pxs, dtype=np.float32)
+        
+        reduced_crystal_edges_sfovs = []
+        reduced_plate_edges_sfovs = []
+        for sfov_idx in range(n_sfov):
+            red_plate, red_crys = reduced_edges_2d_local(
+                sfov_idx, crystal_idx, sfov_corners_batch,
+                plate_objects_vertices, plate_objects_edges,
+                crystal_objects_vertices, crystal_objects_edges,
+                default_device,
+            )
+            reduced_crystal_edges_sfovs.append(red_crys)
+            reduced_plate_edges_sfovs.append(red_plate)
+
+        for sfov_idx in range(n_sfov):
+            ppdf_slice = ppdf_2d_local(
+                sfov_idx, crystal_idx, sfov_pixels_batch,
+                crystal_objects_vertices, reduced_plate_edges_sfovs[sfov_idx],
+                reduced_crystal_edges_sfovs[sfov_idx], subdivision_grid,
+                mu_dict, default_device,
+            )
+            dense_row[sfov_pxs_ids_1d[sfov_idx]] = ppdf_slice.cpu().numpy()
+            
+        # Append to our list in either sparse or dense format
+        if save_sparse:
+            dense_row[dense_row < 1e-9] = 0.0 
+            matrix_rows.append(sp.csr_matrix(dense_row))
+        else:
+            matrix_rows.append(dense_row)
+
+    # 5. Single I/O Write Step
     h5_file_path = os.path.join(output_dir, f"position_{layout_idx:03d}_ppdfs.hdf5")
     
     with h5py.File(h5_file_path, "w") as h5file:
-        ppdf_dataset = h5file.create_dataset("ppdfs", (n_crystals, fov_n_pxs), dtype="f")
-
-        for dataset_idx, crystal_idx_tensor_val in enumerate(crystal_idx_tensor):
-            crystal_idx = int(crystal_idx_tensor_val.item())
-            
-            # Step A: Edge reduction for optimization
-            reduced_crystal_edges_sfovs = []
-            reduced_plate_edges_sfovs = []
-            for sfov_idx in range(n_sfov):
-                red_plate, red_crys = reduced_edges_2d_local(
-                    sfov_idx, crystal_idx, sfov_corners_batch,
-                    plate_objects_vertices, plate_objects_edges,
-                    crystal_objects_vertices, crystal_objects_edges,
-                    default_device,
-                )
-                reduced_crystal_edges_sfovs.append(red_crys)
-                reduced_plate_edges_sfovs.append(red_plate)
-
-            # Step B: Ray-tracing PPDF calculation
-            for sfov_idx in range(n_sfov):
-                ppdf_slice = ppdf_2d_local(
-                    sfov_idx, crystal_idx, sfov_pixels_batch,
-                    crystal_objects_vertices, reduced_plate_edges_sfovs[sfov_idx],
-                    reduced_crystal_edges_sfovs[sfov_idx], subdivision_grid,
-                    mu_dict, default_device,
-                )
-                ppdf_dataset[dataset_idx, sfov_pxs_ids_1d[sfov_idx]] = ppdf_slice.cpu().numpy()
+        if save_sparse:
+            full_sparse_matrix = sp.vstack(matrix_rows)
+            h5file.create_dataset("data", data=full_sparse_matrix.data, compression="gzip")
+            h5file.create_dataset("indices", data=full_sparse_matrix.indices, compression="gzip")
+            h5file.create_dataset("indptr", data=full_sparse_matrix.indptr, compression="gzip")
+            h5file.attrs["shape"] = full_sparse_matrix.shape
+        else:
+            full_dense_matrix = np.vstack(matrix_rows)
+            h5file.create_dataset("ppdfs", data=full_dense_matrix)
 
     elapsed = time.time() - start_time
     print(f"--- Finished Layout {layout_idx} in {elapsed:.2f}s ---")
@@ -149,13 +170,20 @@ if __name__ == "__main__":
         "--config", 
         type=str, 
         default="configs/base_config.yml", 
-        help="Path to the configuration YAML file (default: configs/base_config.yml)"
+        help="Path to the configuration YAML file."
+    )
+    # NEW FLAG: Use --dense to force legacy saving behavior
+    parser.add_argument(
+        "--dense", 
+        action="store_true", 
+        help="Save output in the legacy dense HDF5 format instead of sparse."
     )
     
     args = parser.parse_args()
 
     try:
-        calculate_ppdf_for_layout(args.layout_idx, args.config)
+        # If --dense is provided, save_sparse becomes False
+        calculate_ppdf_for_layout(args.layout_idx, args.config, save_sparse=not args.dense)
     except Exception as e:
         print(f"Execution Error: {e}")
         sys.exit(1)

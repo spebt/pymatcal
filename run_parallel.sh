@@ -8,7 +8,7 @@
 #SBATCH --nodes=1                       # Run all tasks on a single node
 #SBATCH --ntasks=1                      # Request 1 task (our python script)
 #SBATCH --cpus-per-task=10               # Request 2 CPU cores for PyTorch
-#SBATCH --mem=4G                        # Request 4 GB of memory per task
+#SBATCH --mem=2G                        # Request 4 GB of memory per task
 #SBATCH --array=0-39                    # Creates a job array for 20 layouts, indexed 0-19
 #SBATCH --mail-user=smehta28@buffalo.edu
 #SBATCH --mail-type=FAIL,END
@@ -20,7 +20,11 @@ mkdir -p slurm_logs/out slurm_logs/err
 #SBATCH --output=slurm_logs/out/ppdf_%A_%a.out
 #SBATCH --error=slurm_logs/err/ppdf_%A_%a.err
 
-# --- Environment Setup ---
+# --- OPTIMIZATION: Enforce CPU Limits ---
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export OPENBLAS_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
 echo "=========================================================="
 echo "Job ID: $SLURM_JOB_ID"
 echo "Job Array ID: $SLURM_ARRAY_JOB_ID"
@@ -28,6 +32,7 @@ echo "Array Task ID: $SLURM_ARRAY_TASK_ID"
 echo "Running on host: $(hostname)"
 echo "Working directory: $(pwd)"
 echo "Start Time: $(date)"
+echo "CPUs allocated: $SLURM_CPUS_PER_TASK"
 echo "=========================================================="
 
 # Load necessary modules (if any, e.g., module load anaconda3)
