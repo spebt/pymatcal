@@ -3,13 +3,13 @@
 #SBATCH --job-name=ppdf_layout_gen      # Job name for identification
 #SBATCH --cluster=ub-hpc
 #SBATCH --partition=general-compute
-#SBATCH --qos=nih
+#SBATCH --qos=general-compute
 #SBATCH --time=02:00:00                 # Walltime limit (HH:MM:SS)
 #SBATCH --nodes=1                       # Run all tasks on a single node
 #SBATCH --ntasks=1                      # Request 1 task (our python script)
 #SBATCH --cpus-per-task=10               # Request 2 CPU cores for PyTorch
-#SBATCH --mem=2G                        # Request 4 GB of memory per task
-#SBATCH --array=0-39                    # Creates a job array for 20 layouts, indexed 0-19
+#SBATCH --mem=5G                        # Request 4 GB of memory per task
+#SBATCH --array=0                    # Creates a job array for 20 layouts, indexed 0-19
 #SBATCH --mail-user=smehta28@buffalo.edu
 #SBATCH --mail-type=FAIL,END
 
@@ -45,7 +45,7 @@ source /vscratch/grp-rutaoyao/sid/venv/bin/activate
 # Slurm runs this command for each task ID in the array (0, 1, 2, ..., 19)
 echo "Executing Python script for layout index $SLURM_ARRAY_TASK_ID..."
 
-python arg_ppdf_calculation.py $SLURM_ARRAY_TASK_ID
+python arg_ppdf_calculation.py --dense $SLURM_ARRAY_TASK_ID
 
 echo "=========================================================="
 echo "End Time: $(date)"

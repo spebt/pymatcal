@@ -41,17 +41,19 @@ def load_config(config_path: str) -> dict:
 def calculate_ppdf_for_layout(layout_idx: int, config_path: str, save_sparse: bool = True):
     """
     Calculates the PPDF for a specific layout index.
+    Automatically routes to in-memory accumulation (for sparse) 
+    or continuous disk-writing (for dense) to prevent OOM errors.
     """
     start_time = time.time()
     
     # 1. Load Configuration
     config = load_config(config_path)
-    print(f"--- Starting PPDF calculation for Layout: {layout_idx} ---")
-    print(f"--- Using Configuration: {config_path} ---")
-    print(f"--- Output Format: {'Sparse (Optimized)' if save_sparse else 'Dense (Legacy)'} ---")
+    print(f"--- Starting PPDF calculation for Layout: {layout_idx} ---", flush=True)
+    print(f"--- Using Configuration: {config_path} ---", flush=True)
+    print(f"--- Output Format: {'Sparse (Optimized)' if save_sparse else 'Dense (Legacy)'} ---", flush=True)
 
     # Sync PyTorch threads with SLURM allocation to prevent overhead
-    num_threads = int(os.environ.get('SLURM_CPUS_PER_TASK', 1))
+    num_threads = int(os.environ.get('SLURM_CPUS_PER_TASK', 10))
     torch.set_num_threads(num_threads)
 
     # 2. Setup Parameters from Config
@@ -93,8 +95,8 @@ def calculate_ppdf_for_layout(layout_idx: int, config_path: str, save_sparse: bo
     )
     subdivision_grid = subdivision_grid_rectangle(crystal_n_subs)
 
-    print(f"System Matrix: {config['fov']['pixels'][0]}x{config['fov']['pixels'][1]} px")
-    print(f"Hardware: PyTorch using {get_num_threads()} threads.")
+    print(f"System Matrix: {config['fov']['pixels'][0]}x{config['fov']['pixels'][1]} px", flush=True)
+    print(f"Hardware: PyTorch using {get_num_threads()} threads.", flush=True)
 
     # 3. Geometry Preparation
     (
@@ -105,10 +107,24 @@ def calculate_ppdf_for_layout(layout_idx: int, config_path: str, save_sparse: bo
     n_crystals = crystal_objects_vertices.shape[0]
     crystal_idx_tensor = arange(n_crystals)
 
-    # 4. Iterative Calculation
+    # 4. Initialization & Pre-allocation
     os.makedirs(output_dir, exist_ok=True)
-    matrix_rows = []
+    h5_file_path = os.path.join(output_dir, f"position_{layout_idx:03d}_ppdfs.hdf5")
+    
+    matrix_rows = [] # Used exclusively for sparse RAM accumulation
+    
+    if not save_sparse:
+        # Pre-allocate the dense dataset directly on the disk
+        h5file_dense = h5py.File(h5_file_path, "w")
+        dense_ds = h5file_dense.create_dataset(
+            "ppdfs", 
+            shape=(n_crystals, fov_n_pxs), 
+            dtype="float32", 
+            chunks=(1, fov_n_pxs),  # Chunking row-by-row optimizes write speed
+            compression="gzip"
+        )
 
+    # 5. Iterative Calculation
     for dataset_idx, crystal_idx_tensor_val in enumerate(crystal_idx_tensor):
         crystal_idx = int(crystal_idx_tensor_val.item())
         dense_row = np.zeros(fov_n_pxs, dtype=np.float32)
@@ -134,30 +150,34 @@ def calculate_ppdf_for_layout(layout_idx: int, config_path: str, save_sparse: bo
             )
             dense_row[sfov_pxs_ids_1d[sfov_idx]] = ppdf_slice.cpu().numpy()
             
-        # Append to our list in either sparse or dense format
+        # --- Memory Routing ---
         if save_sparse:
+            # Accumulate sparse matrices in RAM. (Virtually zero memory footprint)
             dense_row[dense_row < 1e-9] = 0.0 
             matrix_rows.append(sp.csr_matrix(dense_row))
         else:
-            matrix_rows.append(dense_row)
+            # Continuously stream the dense row to the pre-allocated disk dataset
+            dense_ds[dataset_idx, :] = dense_row
+            
+        if (dataset_idx + 1) % 200 == 0:
+            print(f"  Calculated PPDF for {dataset_idx + 1}/{n_crystals} detectors.", flush=True)
 
-    # 5. Single I/O Write Step
-    h5_file_path = os.path.join(output_dir, f"position_{layout_idx:03d}_ppdfs.hdf5")
-    
-    with h5py.File(h5_file_path, "w") as h5file:
-        if save_sparse:
+    # 6. Finalize Saving
+    if save_sparse:
+        # For sparse, we write everything at the very end
+        with h5py.File(h5_file_path, "w") as h5file:
             full_sparse_matrix = sp.vstack(matrix_rows)
             h5file.create_dataset("data", data=full_sparse_matrix.data, compression="gzip")
             h5file.create_dataset("indices", data=full_sparse_matrix.indices, compression="gzip")
             h5file.create_dataset("indptr", data=full_sparse_matrix.indptr, compression="gzip")
             h5file.attrs["shape"] = full_sparse_matrix.shape
-        else:
-            full_dense_matrix = np.vstack(matrix_rows)
-            h5file.create_dataset("ppdfs", data=full_dense_matrix)
+    else:
+        # For dense, we simply close the file we've been streaming to
+        h5file_dense.close()
 
     elapsed = time.time() - start_time
-    print(f"--- Finished Layout {layout_idx} in {elapsed:.2f}s ---")
-    print(f"Output saved to: {h5_file_path}")
+    print(f"--- Finished Layout {layout_idx} in {elapsed:.2f}s ---", flush=True)
+    print(f"Output saved to: {h5_file_path}", flush=True)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Calculate PPDF for a specific scanner layout.")
@@ -172,7 +192,7 @@ if __name__ == "__main__":
         default="configs/base_config.yml", 
         help="Path to the configuration YAML file."
     )
-    # NEW FLAG: Use --dense to force legacy saving behavior
+    # Use --dense to force legacy saving behavior
     parser.add_argument(
         "--dense", 
         action="store_true", 
