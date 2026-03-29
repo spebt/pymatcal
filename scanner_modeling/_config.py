@@ -1,7 +1,7 @@
-from torch import float64
+from torch import float32
 
 #: Global floating-point dtype for all 3D geometry / raytracing tensors.
-DTYPE = float64  # fixed precision
+DTYPE = float32
 
 #: Canonical distance unit used throughout geometry/raytracer.
 #: All distances passed into the 3D pipeline must be in these units.

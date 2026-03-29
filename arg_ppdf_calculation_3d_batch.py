@@ -168,27 +168,26 @@ def main():
     objects = load_scanner_geometry_3d_from_layout(args.layout, scanner_layouts_for_objects)
 
     # -----------------------------
-    # 3) Precompute voxel entrance faces for all detectors (once)
+    # 3) Precompute voxel faces for all detectors (once)
+    #    Include all faces EXCEPT the back face (farthest from FOV).
     # -----------------------------
     quads = hexahedron_quads(det_hex)  # (N_det_total, 6, 4, 3)
 
     face_centers = quads.mean(dim=2)               # (N_det_total, 6, 3)
     radial = torch.linalg.norm(face_centers[..., :2], dim=-1)  # (N_det_total, 6)
-    front_face_idx = radial.argmin(dim=1)          # (N_det_total,)
+    back_face_idx = radial.argmax(dim=1)           # (N_det_total,) — farthest from FOV
 
-    # all_voxel_faces: (N_det_total, 1, 2, 3, 3) for entrance faces triangulated into 2 triangles
+    # Build all_voxel_faces: (N_det_total, 5, 2, 3, 3) — 5 faces, 2 triangles each
     all_voxel_faces = torch.empty(
-        (N_det_total, 1, 2, 3, 3), dtype=DTYPE, device=device
+        (N_det_total, 5, 2, 3, 3), dtype=DTYPE, device=device
     )
-    idx_expanded = front_face_idx.view(-1, 1, 1, 1).expand(-1, 1, 4, 3)
-    sel_quads = torch.gather(quads, 1, idx_expanded).squeeze(1)  # (N_det_total, 4, 3)
-
-    all_voxel_faces[:, 0, 0] = torch.stack(
-        [sel_quads[:, 0], sel_quads[:, 1], sel_quads[:, 2]], dim=1
-    )
-    all_voxel_faces[:, 0, 1] = torch.stack(
-        [sel_quads[:, 0], sel_quads[:, 2], sel_quads[:, 3]], dim=1
-    )
+    for det_i in range(N_det_total):
+        back_idx = int(back_face_idx[det_i].item())
+        keep = [f for f in range(6) if f != back_idx]  # 5 face indices
+        for slot, face_idx in enumerate(keep):
+            q = quads[det_i, face_idx]  # (4, 3)
+            all_voxel_faces[det_i, slot, 0] = torch.stack([q[0], q[1], q[2]], dim=0)
+            all_voxel_faces[det_i, slot, 1] = torch.stack([q[0], q[2], q[3]], dim=0)
 
     # -----------------------------
     # 4) FOV + material mapping
@@ -234,12 +233,12 @@ def main():
             device=device,
         )
 
-        # Dense row for this detector
+        # Dense row for this detector (vectorized scatter)
         dense_row = torch.zeros(total_voxels, dtype=torch.float32, device=device)
         if triples:
-            # triples are (row, col, val), row is global index but we only care about the cols
-            for _, c, v in triples:
-                dense_row[c] = v
+            cols_t = torch.tensor([c for _, c, _ in triples], dtype=torch.long, device=device)
+            vals_t = torch.tensor([v for _, _, v in triples], dtype=torch.float32, device=device)
+            dense_row.scatter_(0, cols_t, vals_t)
 
         results.append((det_idx, dense_row.cpu().numpy()))
 

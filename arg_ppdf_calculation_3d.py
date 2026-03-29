@@ -158,18 +158,18 @@ def main():
     target_center = det_block["centers"][target_idx].unsqueeze(0) # (1, 3)
     
     # Extract Face Geometry for Solid Angle (Just for target)
+    # Include all faces EXCEPT the back face (farthest from FOV).
     quads = hexahedron_quads(det_hex[target_idx:target_idx+1]) # (1, 6, 4, 3)
-    # ... (Same face logic as before) ...
     face_centers = quads.mean(dim=2)
     radial = torch.linalg.norm(face_centers[..., :2], dim=-1)
-    front_face_idx = radial.argmin(dim=1)
-    
-    # Create single voxel_face tensor
-    quad = quads[0, front_face_idx[0]] 
-    a, b, c, d = quad[0], quad[1], quad[2], quad[3]
-    target_voxel_faces = torch.empty((1, 1, 2, 3, 3), dtype=DTYPE, device=device)
-    target_voxel_faces[0, 0, 0] = torch.stack([a, b, c], dim=0)
-    target_voxel_faces[0, 0, 1] = torch.stack([a, c, d], dim=0)
+    back_face_idx = int(radial.argmax(dim=1)[0].item())
+
+    keep = [f for f in range(6) if f != back_face_idx]  # 5 face indices
+    target_voxel_faces = torch.empty((1, 5, 2, 3, 3), dtype=DTYPE, device=device)
+    for slot, face_idx in enumerate(keep):
+        q = quads[0, face_idx]  # (4, 3)
+        target_voxel_faces[0, slot, 0] = torch.stack([q[0], q[1], q[2]], dim=0)
+        target_voxel_faces[0, slot, 1] = torch.stack([q[0], q[2], q[3]], dim=0)
 
     # ---------------------------------------------------------
     # 4) Define FOV and Materials
@@ -215,11 +215,12 @@ def main():
     # Reconstruct dense volume for plotting/saving
     fov_n_vox = Nx * Ny * Nz
     ppdf_volume = torch.zeros(fov_n_vox, dtype=DTYPE, device=device)
-    
-    for r, c, v in triples:
-        # r is always 0 here because we computed for 1 detector index relative to the input list
-        ppdf_volume[c] = v
-        
+
+    if triples:
+        cols_t = torch.tensor([c for _, c, _ in triples], dtype=torch.long, device=device)
+        vals_t = torch.tensor([v for _, _, v in triples], dtype=DTYPE, device=device)
+        ppdf_volume.scatter_(0, cols_t, vals_t)
+
     ppdf_volume = ppdf_volume.view(Nx, Ny, Nz)
 
     with h5py.File(args.output, "w") as f:

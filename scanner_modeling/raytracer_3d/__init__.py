@@ -4,12 +4,13 @@ __all__ = [
     "ray_obb_intersection_local",
     "ray_convex_polyhedron_intersection_local",
     "RayPPDFTerms3D",
+    "SparsePathLengths",
     "ppdf_ray_factor_3d",
     "ray_directions_from_points",
-    "ppdf_3d_local",            
-    "ray_object_path_lengths_world",  
+    "ppdf_3d_local",
+    "ray_object_path_lengths_world",
     "ray_aabb_intersect",
-    "build_ray_object_candidate_lists", 
+    "build_ray_object_candidate_lists",
     "compute_system_matrix_for_detector",
 ]
 
@@ -20,9 +21,10 @@ from .._raytracer_3d._intersection_polyhedron_3d import (
 )
 from .._raytracer_3d._ppdf_3d import (
     RayPPDFTerms3D,
+    SparsePathLengths,
     ppdf_ray_factor_3d,
-    ppdf_3d_local,                  
-    ray_object_path_lengths_world,  
+    ppdf_3d_local,
+    ray_object_path_lengths_world,
 )
 
 from .._raytracer_3d._intersection_aabb_3d import (
