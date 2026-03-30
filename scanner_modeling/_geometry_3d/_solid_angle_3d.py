@@ -1,4 +1,5 @@
 # pymatcal/scanner_modeling/_geometry_3d/_solid_angle_3d.py
+from __future__ import annotations
 
 from typing import Iterable, Sequence
 

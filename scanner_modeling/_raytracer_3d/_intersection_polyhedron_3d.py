@@ -1,6 +1,4 @@
-import torch
-from torch import Tensor
-from .._config import DTYPE
+from __future__ import annotations
 
 # scanner_modeling/_raytracer_3d/_intersection_polyhedron_3d.py
 import torch

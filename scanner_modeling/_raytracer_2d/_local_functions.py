@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Dict, List, Sequence, Tuple
 
 from torch import Tensor, arange, argwhere, bmm, cat, device

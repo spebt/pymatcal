@@ -1,4 +1,5 @@
 # pymatcal/scanner_modeling/_geometry_3d/_io.py
+from __future__ import annotations
 
 from typing import Dict, Tuple, Optional
 
@@ -365,6 +366,17 @@ def load_scanner_geometry_3d_from_layout(
         objects["plane_offsets_local"] = plane_offsets_local
         if num_planes is not None:
             objects["num_planes"] = num_planes
+
+        # Propagate tight local-frame AABBs when provided (enables efficient
+        # broad-phase culling via object_to_world_aabb; without these the
+        # fallback is infinite AABB — correct but slow for many small polys).
+        if "poly_local_aabb_min" in poly and "poly_local_aabb_max" in poly:
+            objects["poly_local_aabb_min"] = poly["poly_local_aabb_min"].to(
+                dtype=DTYPE, device=device
+            )
+            objects["poly_local_aabb_max"] = poly["poly_local_aabb_max"].to(
+                dtype=DTYPE, device=device
+            )
 
     # ----- Attach core arrays and type codes -----
     objects["centers"] = centers
