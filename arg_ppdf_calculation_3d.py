@@ -212,8 +212,13 @@ def main():
     # Include all faces EXCEPT the back face (farthest from FOV).
     quads = hexahedron_quads(det_hex[target_idx:target_idx+1]) # (1, 6, 4, 3)
     face_centers = quads.mean(dim=2)
-    radial = torch.linalg.norm(face_centers[..., :2], dim=-1)
-    back_face_idx = int(radial.argmax(dim=1)[0].item())
+    # Use full 3-D distance from the FOV centre (origin) to identify the back face.
+    # The back face is whichever face centre is geometrically farthest from the FOV.
+    # This works for both ring scanners (outer radial face) and flat panels (+Y face)
+    # without relying on a 2-D XY projection, which could mis-identify the back face
+    # for detectors with large X or Z offsets relative to their Y depth.
+    dist3d = torch.linalg.norm(face_centers, dim=-1)        # (1, 6)
+    back_face_idx = int(dist3d.argmax(dim=1)[0].item())
 
     keep = [f for f in range(6) if f != back_face_idx]  # 5 face indices
     target_voxel_faces = torch.empty((1, 5, 2, 3, 3), dtype=DTYPE, device=device)

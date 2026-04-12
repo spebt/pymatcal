@@ -14,6 +14,7 @@ from scanner_modeling._config import DTYPE
 from scanner_modeling.geometry_3d import (
     fov_tensor_dict_3d,
     load_scanner_geometry_3d_from_layout,
+    build_convex_union_convex_poly_block,
 )
 
 # 2D layout loader
@@ -119,6 +120,15 @@ def main():
     layout_filename = os.path.basename(args.layout_file)
     scanner_layouts, _ = load_scanner_layouts(layout_dir, layout_filename)
 
+    # Also load raw tensor for top-level metadata (mu values, hole prisms).
+    raw_layout = torch.load(args.layout_file, weights_only=False)
+    applied_cfg = raw_layout.get("applied_config", {})
+    hole_prisms  = raw_layout.get("collimator hole prisms", None)
+
+    # Per-material attenuation (mm^-1). Fall back to MPH defaults if absent.
+    mu_plate = float(applied_cfg.get("mu_plate_mm_inv",    3.5))
+    mu_det   = float(applied_cfg.get("mu_detector_mm_inv", 0.475))
+
     key = f"position {args.layout:03d}"
     layout_entry = scanner_layouts[key]
 
@@ -163,8 +173,34 @@ def main():
         ),
     }
 
-    # Use the same helper as in your single-detector script to build `objects`
-    scanner_layouts_for_objects = {key: {"obb": obb_layout}}
+    # Option A hole prisms: convex poly objects with mu = -mu_plate.
+    MATERIAL_PLATE     = 0
+    MATERIAL_DETECTOR  = 1
+    MATERIAL_HOLE_VOID = 2
+
+    holes_poly_block = None
+    if hole_prisms is not None:
+        M_holes = hole_prisms["centers"].shape[0]
+        print(f"Loading {M_holes} hole prisms (negative-mu subtractive geometry)...")
+        holes_poly_block = build_convex_union_convex_poly_block(
+            centers              = hole_prisms["centers"].to(device=device),
+            rotations            = hole_prisms["rotations"].to(device=device),
+            plane_normals_local  = hole_prisms["plane_normals_local"].to(device=device),
+            plane_offsets_local  = hole_prisms["plane_offsets_local"].to(device=device),
+            material_index       = MATERIAL_HOLE_VOID,
+            detector_index       = -1,
+            detector_voxel_index = -1,
+            num_planes           = hole_prisms["num_planes"].to(device=device),
+        )
+        if "poly_local_aabb_min" in hole_prisms:
+            holes_poly_block["poly_local_aabb_min"] = hole_prisms["poly_local_aabb_min"].to(device=device)
+            holes_poly_block["poly_local_aabb_max"] = hole_prisms["poly_local_aabb_max"].to(device=device)
+
+    entry = {"obb": obb_layout}
+    if holes_poly_block is not None:
+        entry["convex_poly"] = holes_poly_block
+
+    scanner_layouts_for_objects = {key: entry}
     objects = load_scanner_geometry_3d_from_layout(args.layout, scanner_layouts_for_objects)
 
     # -----------------------------
@@ -174,8 +210,12 @@ def main():
     quads = hexahedron_quads(det_hex)  # (N_det_total, 6, 4, 3)
 
     face_centers = quads.mean(dim=2)               # (N_det_total, 6, 3)
-    radial = torch.linalg.norm(face_centers[..., :2], dim=-1)  # (N_det_total, 6)
-    back_face_idx = radial.argmax(dim=1)           # (N_det_total,) — farthest from FOV
+    # Full 3-D distance from the FOV centre (origin) — correct for ring scanners
+    # (outer radial face) and flat panels (+Y face) alike.  The previous [:2]
+    # projection worked by coincidence for the SCT panel but fails in general when
+    # detector X or Z offsets approach the Y depth.
+    dist3d = torch.linalg.norm(face_centers, dim=-1)          # (N_det_total, 6)
+    back_face_idx = dist3d.argmax(dim=1)           # (N_det_total,) — farthest from FOV
 
     # Build all_voxel_faces: (N_det_total, 5, 2, 3, 3) — 5 faces, 2 triangles each
     all_voxel_faces = torch.empty(
@@ -203,10 +243,13 @@ def main():
     Nx, Ny, Nz = [int(v.item()) for v in fov_dict["n voxels"]]
     total_voxels = Nx * Ny * Nz
 
-    # Map materials as in single-detector script
-    mu_table = torch.tensor([3.5, 0.475], dtype=DTYPE, device=device)
+    # Map materials: index 0=plate, 1=detector, 2=hole void (negative, subtractive).
+    if hole_prisms is not None:
+        mu_table = torch.tensor([mu_plate, mu_det, -mu_plate], dtype=DTYPE, device=device)
+    else:
+        mu_table = torch.tensor([mu_plate, mu_det], dtype=DTYPE, device=device)
     mu_objects_expanded = mu_table[objects["material_index"]]
-    mu_detector = torch.tensor(0.475, dtype=DTYPE, device=device)
+    mu_detector = torch.tensor(mu_det, dtype=DTYPE, device=device)
 
     # -----------------------------
     # 5) Loop over detectors (sequential)

@@ -3,14 +3,15 @@
 debug_scgc_raytrace_3d.py
 
 Advanced debugging tool that:
-1. Loads the scanner geometry from a .tensor file.
+1. Loads the scanner geometry from a .tensor file (MPH or SCT).
 2. Converts Hexahedra -> OBBs.
 3. Casts a ray from a Voxel to a specific Detector.
 4. CALCULATES intersections with collimator plates (Inner & Outer rings).
 5. Visualizes the scene with color-coded hits (Red=Entry, Green=Exit).
+   For SCT layouts, hole prism centres are overlaid as orange markers.
 
 Usage:
-    python debug_scgc_raytrace_3d.py --layout 0 --det 1200 --layout_file ../data/scanner_layouts/mph_hourglass_single_position_base_3d_v2.tensor
+    python dbg_ray_single.py --layout 0 --det 1200 --layout_file ../data/scanner_layouts/sct_single_position_base_3d.tensor
 """
 
 import argparse
@@ -169,11 +170,15 @@ def main():
     # --- Load Geometry ---
     if not os.path.exists(args.layout_file):
         raise FileNotFoundError(f"Missing file: {args.layout_file}")
-    
+
     dir_name = os.path.dirname(args.layout_file)
     file_name = os.path.basename(args.layout_file)
     scanner_layouts, _ = load_scanner_layouts(dir_name, file_name)
     layout = scanner_layouts[f"position {args.layout:03d}"]
+
+    # Load raw tensor to pick up hole prisms (SCT layouts only).
+    raw_layout = torch.load(args.layout_file, weights_only=False)
+    hole_prisms = raw_layout.get("collimator hole prisms", None)
 
     # Get Tensors
     det_hex = layout["detector units 3d"].to(DTYPE)
@@ -301,6 +306,13 @@ def main():
     
     plot_hits(hits_in)
     plot_hits(hits_out)
+
+    # Plot hole prism centres (SCT layouts)
+    if hole_prisms is not None:
+        hc = hole_prisms["centers"].cpu().numpy()  # (M, 3)
+        ax.scatter(hc[:, 0], hc[:, 1], hc[:, 2],
+                   c="orange", s=8, alpha=0.5, marker="o", label="Holes")
+        print(f"Visualised {hc.shape[0]} hole prism centres (orange).")
 
     # Plot Voxel & Target Center
     ax.scatter([p0n[0]], [p0n[1]], [p0n[2]], c="gold", s=100, marker="*", label="Voxel", zorder=10)
