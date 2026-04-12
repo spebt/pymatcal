@@ -38,24 +38,22 @@ def solid_angle_triangle(
     -------
     omega : Tensor
         Solid angle in steradians, shape equal to the broadcasted
-        leading dimensions of v0, v1, v2.  Back-facing triangles
-        (scalar triple product ≤ 0, i.e. the triangle normal points
-        away from the observer) contribute exactly zero — back-face
-        culling is applied so off-axis voxels do not double-count
-        silhouette faces.
+        leading dimensions of v0, v1, v2. Always non-negative.
 
     Notes
     -----
-    Oosterom & Strackee formula (signed):
+    Oosterom & Strackee formula:
 
-        triple = a · (b × c)      ← positive when triangle faces observer
-        Ω = 2 * atan2( triple,
+        Ω = 2 * atan2( |a · (b × c)|,
                        ||a|| ||b|| ||c||
                        + (a·b) ||c||
                        + (a·c) ||b||
                        + (b·c) ||a|| )
 
-    Back-face culling: if triple ≤ 0, Ω = 0.
+    where a, b, c are vertex vectors from the observation point.
+    The absolute value of the triple product is used so that the result
+    is independent of triangle winding order and always non-negative.
+    Degenerate triangles (|triple| ≤ eps) are zeroed out.
     """
     v0 = v0.to(dtype=DTYPE)
     v1 = v1.to(dtype=DTYPE)
@@ -74,9 +72,10 @@ def solid_angle_triangle(
     ac = (a * c).sum(dim=-1)
     bc = (b * c).sum(dim=-1)
 
-    # Triple product a · (b × c) — positive when triangle faces the observer
+    # |a · (b × c)| — absolute value makes result winding-order independent
     cross_bc = torch.cross(b, c, dim=-1)
     triple = (a * cross_bc).sum(dim=-1)
+    numer = triple.abs()
 
     denom = (
         la * lb * lc
@@ -88,11 +87,10 @@ def solid_angle_triangle(
     eps_t = torch.tensor(eps, dtype=DTYPE, device=denom.device)
     denom_safe = torch.where(denom.abs() < eps_t, eps_t, denom)
 
-    omega_signed = 2.0 * torch.atan2(triple, denom_safe)
+    omega = 2.0 * torch.atan2(numer, denom_safe)
 
-    # Back-face cull: triangle faces away (triple ≤ 0) → zero contribution.
-    # This prevents off-axis voxels from double-counting silhouette side faces.
-    omega = torch.where(triple <= eps_t, torch.zeros_like(omega_signed), omega_signed)
+    # Zero out degenerate triangles (collinear vertices or point at origin)
+    omega = torch.where(numer <= eps_t, torch.zeros_like(omega), omega)
 
     return omega
 

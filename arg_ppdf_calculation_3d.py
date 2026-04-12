@@ -333,7 +333,7 @@ def main():
         # Optional: Add grid for reference
         plt.grid(color='white', linestyle='--', linewidth=0.5, alpha=0.3)
 
-        plot_file = args.output.replace(".hdf5", ".png")
+        plot_file = os.path.splitext(args.output)[0] + ".png"
         plt.tight_layout()
         plt.savefig(plot_file, dpi=150)
         print(f"Plot (in mm) saved to {plot_file}")
