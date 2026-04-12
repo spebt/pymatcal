@@ -106,6 +106,10 @@ def _compute_sparse_path_lengths(
     o_w = ray_origins_world[sparse_ray_indices]   # (N_pairs, 3)
     d_w = ray_dirs_world[sparse_ray_indices]       # (N_pairs, 3)
 
+    # Rotation is norm-preserving: ||R^T d_w|| = ||d_w||.
+    # Compute once here and reuse for both OBB and poly branches (Issue #4).
+    d_w_norm = d_w.norm(dim=-1)                    # (N_pairs,)
+
     c_obj = centers[sparse_obj_indices]            # (N_pairs, 3)
     R_obj = rotations[sparse_obj_indices]          # (N_pairs, 3, 3)
 
@@ -137,8 +141,7 @@ def _compute_sparse_path_lengths(
             o_local[is_obb], d_local[is_obb], half_sizes_sub
         )
 
-        d_norm = d_local[is_obb].norm(dim=-1)
-        L = torch.clamp(t_out - t_in, min=0.0) * d_norm
+        L = torch.clamp(t_out - t_in, min=0.0) * d_w_norm[is_obb]
         L = torch.where(hits, L, torch.zeros_like(L))
         all_L[is_obb] = L
 
@@ -174,8 +177,7 @@ def _compute_sparse_path_lengths(
         t_out = t_out.squeeze(0)
         hits = hits.squeeze(0)
 
-        d_norm = d_local[is_poly].norm(dim=-1)
-        L = torch.clamp(t_out - t_in, min=0.0) * d_norm
+        L = torch.clamp(t_out - t_in, min=0.0) * d_w_norm[is_poly]
         L = torch.where(hits, L, torch.zeros_like(L))
         all_L[is_poly] = L
 
@@ -250,6 +252,9 @@ def ray_object_path_lengths_world(
         o_local = torch.einsum("nij,nj->ni", R_T, rel_pos)
         d_local = torch.einsum("nij,nj->ni", R_T, d_w)
 
+        # Rotation is norm-preserving — compute once, reuse for OBB and poly
+        d_w_norm = d_w.norm(dim=-1)  # (N_pairs,)
+
         # 3. Dispatch based on Object Type
         obj_types = objects["type"][sparse_obj_indices]
 
@@ -270,8 +275,7 @@ def ray_object_path_lengths_world(
                 o_local[mask_obb], d_local[mask_obb], half_sizes_sub
             )
 
-            d_norm = d_local[mask_obb].norm(dim=-1)
-            L = torch.clamp(t_out - t_in, min=0.0) * d_norm
+            L = torch.clamp(t_out - t_in, min=0.0) * d_w_norm[mask_obb]
             L = torch.where(hits, L, torch.zeros_like(L))
 
             L_objects.index_put_(
@@ -316,8 +320,7 @@ def ray_object_path_lengths_world(
             t_out = t_out.squeeze(0)
             hits = hits.squeeze(0)
 
-            d_norm = d_local[mask_poly].norm(dim=-1)
-            L = torch.clamp(t_out - t_in, min=0.0) * d_norm
+            L = torch.clamp(t_out - t_in, min=0.0) * d_w_norm[mask_poly]
             L = torch.where(hits, L, torch.zeros_like(L))
 
             L_objects.index_put_(
@@ -339,6 +342,9 @@ def ray_object_path_lengths_world(
         ray_origins_world, ray_dirs_world, centers, rotations
     )
 
+    # Rotation is norm-preserving — compute world norm once, index per object type
+    d_w_norm = ray_dirs_world.norm(dim=-1)  # (N_rays,)
+
     # 2) OBB objects
     obb_ids = objects.get("obb_object_ids", None)
     if obb_ids is not None and obb_ids.numel() > 0:
@@ -349,8 +355,8 @@ def ray_object_path_lengths_world(
         t_enter_obb, t_exit_obb, hit_obb = ray_obb_intersection_local(
             o_obb, d_obb, half_sizes
         )
-        d_norm = d_obb.norm(dim=-1)
-        L_obb = torch.clamp(t_exit_obb - t_enter_obb, min=0.0) * d_norm
+        # d_w_norm: (N_rays,) → unsqueeze to broadcast over N_obb objects
+        L_obb = torch.clamp(t_exit_obb - t_enter_obb, min=0.0) * d_w_norm.unsqueeze(-1)
         L_obb = torch.where(hit_obb, L_obb, torch.zeros((), dtype=DTYPE, device=device))
 
         L_objects[:, obb_ids] = L_obb
@@ -376,8 +382,7 @@ def ray_object_path_lengths_world(
             o_poly, d_poly, plane_normals, plane_offsets, plane_mask
         )
 
-        d_norm_poly = d_poly.norm(dim=-1)
-        L_poly = torch.clamp(t_exit_poly - t_enter_poly, min=0.0) * d_norm_poly
+        L_poly = torch.clamp(t_exit_poly - t_enter_poly, min=0.0) * d_w_norm.unsqueeze(-1)
         L_poly = torch.where(hit_poly, L_poly, torch.zeros((), dtype=DTYPE, device=device))
 
         L_objects[:, poly_ids] = L_poly
@@ -486,8 +491,9 @@ def ppdf_3d_local(
         )
 
         # --- Compute S_voxel from sparse hits ---
-        det_index_per_obj = objects["detector_index"].to(device=device)
-        det_voxel_index_per_obj = objects["detector_voxel_index"].to(device=device)
+        # objects is guaranteed on device by compute_system_matrix_for_detector (Issue #3)
+        det_index_per_obj = objects["detector_index"]
+        det_voxel_index_per_obj = objects["detector_voxel_index"]
 
         # Build per-ray q-index (which detector voxel each ray targets)
         q_indices = torch.arange(N_det_vox, device=device, dtype=torch.long)
@@ -527,7 +533,7 @@ def ppdf_3d_local(
                 ext_ray = sparse_result.ray_indices[is_external]
                 ext_obj = sparse_result.obj_indices[is_external]
                 ext_L = sparse_result.lengths[is_external]
-                ext_mu = mu_objects.to(device=device, dtype=dtype)[ext_obj]
+                ext_mu = mu_objects[ext_obj]  # already on device (Issue #3)
                 sum_muL.index_add_(0, ext_ray, ext_mu * ext_L)
 
         # --- Assemble PPDF ---
@@ -552,8 +558,9 @@ def ppdf_3d_local(
     )
 
     # Compute S_{iqj}: length inside detector voxel (i, q)
-    det_index_per_obj = objects["detector_index"].to(device=device)
-    det_voxel_index_per_obj = objects["detector_voxel_index"].to(device=device)
+    # objects already on device (Issue #3)
+    det_index_per_obj = objects["detector_index"]
+    det_voxel_index_per_obj = objects["detector_voxel_index"]
 
     det_mask = (det_index_per_obj == int(detector_index)) & (det_voxel_index_per_obj >= 0)
 

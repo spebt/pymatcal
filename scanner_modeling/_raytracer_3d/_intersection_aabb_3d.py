@@ -145,26 +145,22 @@ def build_ray_object_candidate_lists(
     Returns
     -------
     obj_indices : Tensor
-        1D tensor of length N_pairs (int64) listing the object index
-        for each (ray, object) pair that passed the AABB test.
+        1D tensor of length N_pairs (int64) — object index for each
+        (ray, object) pair that passed the AABB test.
 
-    ray_offsets : Tensor
-        1D tensor (int64) of length N_rays_flat + 1, where
-            ray_offsets[r]   is the start index in `obj_indices`
-            ray_offsets[r+1] is the end index (exclusive)
-        for the r-th flattened ray (0 ≤ r < N_rays_flat).
+    ray_indices : Tensor
+        1D tensor of length N_pairs (int64) — flat ray index for each
+        hit pair, sorted in ascending order (row-major from nonzero).
+        Directly usable as sparse_ray_indices in ppdf_3d_local.
 
     ray_shape : tuple of int
-        The original ray batch shape (*R,), so you can map flattened
-        ray indices back to multi-dimensional indices if needed.
+        The original ray batch shape (*R,).
 
     Notes
     -----
-    - The flattened ray index r ∈ [0, N_rays_flat) corresponds to
-      the usual row-major indexing of o.view(-1, 3).
     - If there are no rays or no objects, the function returns:
         obj_indices = empty (0,)
-        ray_offsets = zeros(N_rays_flat + 1)
+        ray_indices = empty (0,)
     """
     if o.shape != d.shape or o.shape[-1] != 3:
         raise ValueError(
@@ -191,9 +187,8 @@ def build_ray_object_candidate_lists(
 
     # Handle trivial cases early
     if n_rays == 0 or n_objs == 0:
-        obj_indices = torch.empty((0,), dtype=torch.int64, device=device)
-        ray_offsets = torch.zeros((n_rays + 1,), dtype=torch.int64, device=device)
-        return obj_indices, ray_offsets, ray_shape
+        empty = torch.empty((0,), dtype=torch.int64, device=device)
+        return empty, empty.clone(), ray_shape
 
     # Flatten rays to (N_rays, 3)
     o_flat = o.reshape(n_rays, 3)
@@ -203,30 +198,15 @@ def build_ray_object_candidate_lists(
     hit_mask = ray_aabb_intersect(o_flat, d_flat, aabb_min, aabb_max)
     # hit_mask: (N_rays, N_obj)
 
-    # Extract (ray_idx, obj_idx) pairs from boolean mask
-    # nonzero returns row-major order, so pairs are already sorted by ray index
+    # Extract (ray_idx, obj_idx) pairs — nonzero returns row-major order
+    # so pairs are already sorted by ray index (no argsort needed)
     hits = hit_mask.nonzero(as_tuple=False)  # (N_pairs, 2)
 
     if hits.shape[0] == 0:
-        obj_indices = torch.empty((0,), dtype=torch.int64, device=device)
-        ray_offsets = torch.zeros((n_rays + 1,), dtype=torch.int64, device=device)
-        return obj_indices, ray_offsets, ray_shape
+        empty = torch.empty((0,), dtype=torch.int64, device=device)
+        return empty, empty.clone(), ray_shape
 
-    ray_indices_flat = hits[:, 0]  # already sorted (row-major from nonzero)
-    obj_indices = hits[:, 1]
+    ray_indices = hits[:, 0]   # (N_pairs,) — flat ray index per hit, sorted
+    obj_indices = hits[:, 1]   # (N_pairs,) — object index per hit
 
-    # Count hits per ray, then build prefix sums to get offsets
-    ray_counts = torch.bincount(
-        ray_indices_flat,
-        minlength=n_rays,
-    )  # (N_rays,)
-
-    ray_offsets = torch.empty(
-        (n_rays + 1,),
-        dtype=torch.int64,
-        device=device,
-    )
-    ray_offsets[0] = 0
-    ray_offsets[1:] = ray_counts.cumsum(0)
-
-    return obj_indices, ray_offsets, ray_shape
+    return obj_indices, ray_indices, ray_shape

@@ -32,18 +32,32 @@ def compute_system_matrix_for_detector(
     re-calculating them for every detector.
     """
 
+    # -- (0) Safety guard — batched multi-detector evaluation OOMs (Issue #5)
+    assert det_voxel_centers.shape[0] == 1, (
+        "det_voxel_centers must contain exactly 1 center. "
+        "Passing the full detector ring (N_q > 1) materialises a dense "
+        "(N_fov × N_q, 2, 3) ray tensor that will OOM. "
+        "Call compute_system_matrix_for_detector once per detector."
+    )
+
     # -- (1) Build FOV voxel centers
     fov_centers = voxels_coordinates_3d(fov_dict).to(device=device, dtype=DTYPE)
     N_fov = fov_centers.shape[0]
     N_q = det_voxel_centers.shape[0]
 
-    # -- (2) Precompute AABBs for objects (If not provided)
+    # -- (2) Precompute AABBs for objects (if not provided)
     if aabb_min is None or aabb_max is None:
         aabb_min, aabb_max = object_to_world_aabb(objects)
 
-    # Ensure they are on the right device
     aabb_min = aabb_min.to(device=device)
     aabb_max = aabb_max.to(device=device)
+
+    # -- (3) Move objects dict and mu_objects to device ONCE before the loop.
+    #        Doing this inside ppdf_3d_local (called per chunk) causes a
+    #        CPU→GPU PCIe transfer every chunk iteration (Issue #3).
+    objects = {k: v.to(device=device) if isinstance(v, Tensor) else v
+               for k, v in objects.items()}
+    mu_objects = mu_objects.to(device=device, dtype=DTYPE)
 
     mu_detector_t = torch.tensor(mu_detector, dtype=DTYPE, device=device)
 
@@ -65,22 +79,15 @@ def compute_system_matrix_for_detector(
         e = rays[..., 1, :].reshape(-1, 3)
         d = e - o
 
-        # Broad-phase: candidate object lists
-        obj_idx, ray_offsets, _ = build_ray_object_candidate_lists(
+        # Broad-phase: returns flat (ray_idx, obj_idx) pairs directly (Issue #2)
+        obj_idx, ray_idx, _ = build_ray_object_candidate_lists(
             o, d, aabb_min, aabb_max, max_rays_per_chunk=max_rays_per_chunk
         )
 
-        # Convert CSR to coordinate format (pairs)
-        counts_per_ray = torch.diff(ray_offsets)
-        ray_indices_expanded = torch.repeat_interleave(
-            torch.arange(counts_per_ray.shape[0], device=device),
-            counts_per_ray
-        )
-
-        # Solid angle for this block (use all faces provided in voxel_faces)
+        # Solid angle for this block (all 5 faces; back face excluded at build time)
         solid_angle = solid_angle_detector_voxel(fov_block, voxel_faces, faces="all")
 
-        # Narrow-phase PPDF — pass pre-computed rays to avoid recomputation
+        # Narrow-phase PPDF — pre-computed rays passed to avoid recomputation
         f_block = ppdf_3d_local(
             fov_block,
             det_voxel_centers,
@@ -89,7 +96,7 @@ def compute_system_matrix_for_detector(
             mu_detector_t,
             solid_angle,
             det_index,
-            sparse_ray_indices=ray_indices_expanded,
+            sparse_ray_indices=ray_idx,
             sparse_obj_indices=obj_idx,
             o_world=o,
             d_world=d,

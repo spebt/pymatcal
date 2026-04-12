@@ -13,6 +13,7 @@ from scanner_modeling.geometry_3d import (
     fov_tensor_dict_3d,
     voxels_coordinates_3d,
     load_scanner_geometry_3d_from_layout,
+    build_convex_union_convex_poly_block,
 )
 
 # 2D layout loader
@@ -94,7 +95,7 @@ def main():
     parser.add_argument("--target-det", type=int, required=True, 
                         help="Index of the single detector to simulate (0..1299)")
     
-    parser.add_argument("--layout-file", type=str, default="../data/scanner_layouts/mph_hourglass_single_position_base_3d_v2.tensor")
+    parser.add_argument("--layout-file", type=str, default="../data/scanner_layouts/sct_single_position_base_3d.tensor")
     parser.add_argument("--no-plot", action="store_true")
 
     args = parser.parse_args()
@@ -105,12 +106,22 @@ def main():
     layout_dir = os.path.dirname(args.layout_file)
     layout_filename = os.path.basename(args.layout_file)
     scanner_layouts, uid = load_scanner_layouts(layout_dir, layout_filename)
-    
+
+    # Also load the raw tensor file to read top-level metadata (mu values,
+    # hole prisms) that live outside the "layouts" sub-dict.
+    raw_layout = torch.load(args.layout_file, weights_only=False)
+    applied_cfg  = raw_layout.get("applied_config", {})
+    hole_prisms  = raw_layout.get("collimator hole prisms", None)
+
+    # Per-material attenuation (mm^-1).  Fall back to MPH defaults if absent.
+    mu_plate = float(applied_cfg.get("mu_plate_mm_inv",    3.5))
+    mu_det   = float(applied_cfg.get("mu_detector_mm_inv", 0.475))
+
     key = f"position {args.layout:03d}"
     layout_entry = scanner_layouts[key]
     det_hex = layout_entry["detector units 3d"].to(DTYPE)   # (N_det, 8, 3)
     plate_hex = layout_entry["plate segments 3d"].to(DTYPE) # (N_plate, 8, 3)
-    
+
     N_det_total = det_hex.shape[0]
     device = det_hex.device
     print(f"Total Detectors in Ring: {N_det_total}")
@@ -135,7 +146,7 @@ def main():
     # Combine for the Physics Engine (Objects Dict)
     # The engine needs ALL objects to calculate attenuation correctly
     def concat_blocks(a, b): return torch.cat([a, b], dim=0)
-    
+
     obb_layout = {
         "centers": concat_blocks(det_block["centers"], plate_block["centers"]),
         "rotations": concat_blocks(det_block["rotations"], plate_block["rotations"]),
@@ -144,8 +155,48 @@ def main():
         "detector_index": concat_blocks(det_block["detector_index"], plate_block["detector_index"]),
         "detector_voxel_index": concat_blocks(det_block["detector_voxel_index"], plate_block["detector_voxel_index"]),
     }
-    
-    scanner_layouts_for_objects = {key: {"obb": obb_layout}}
+
+    # ------------------------------------------------------------------
+    # Option A hole mechanism: load octagonal prism descriptors from the
+    # tensor file and register them as CONVEX_POLY objects with
+    # mu = -mu_plate.  The negative mu causes index_add_ in ppdf_3d_local
+    # to subtract the hole path length from the plate contribution, giving
+    # full transmission (exp(0)=1) through a hole and partial transmission
+    # at grazing incidence.
+    #
+    # If the layout has no hole prisms (e.g. MPH scanner), this block is
+    # skipped entirely and behaviour is unchanged.
+    # ------------------------------------------------------------------
+    MATERIAL_PLATE    = 0
+    MATERIAL_DETECTOR = 1
+    MATERIAL_HOLE_VOID = 2   # only used when hole_prisms is present
+
+    holes_poly_block = None
+    if hole_prisms is not None:
+        M_holes = hole_prisms["centers"].shape[0]
+        print(f"Loading {M_holes} hole prisms (Option A, negative-mu subtractive geometry)...")
+
+        holes_poly_block = build_convex_union_convex_poly_block(
+            centers             = hole_prisms["centers"].to(device=device),
+            rotations           = hole_prisms["rotations"].to(device=device),
+            plane_normals_local = hole_prisms["plane_normals_local"].to(device=device),
+            plane_offsets_local = hole_prisms["plane_offsets_local"].to(device=device),
+            material_index      = MATERIAL_HOLE_VOID,
+            detector_index      = -1,
+            detector_voxel_index = -1,
+            num_planes          = hole_prisms["num_planes"].to(device=device),
+        )
+        # Add tight local AABBs so the broad phase can cull the 1218 small
+        # prisms efficiently (without this, every ray would check all holes).
+        if "poly_local_aabb_min" in hole_prisms:
+            holes_poly_block["poly_local_aabb_min"] = hole_prisms["poly_local_aabb_min"].to(device=device)
+            holes_poly_block["poly_local_aabb_max"] = hole_prisms["poly_local_aabb_max"].to(device=device)
+
+    entry = {"obb": obb_layout}
+    if holes_poly_block is not None:
+        entry["convex_poly"] = holes_poly_block
+
+    scanner_layouts_for_objects = {key: entry}
     objects = load_scanner_geometry_3d_from_layout(args.layout, scanner_layouts_for_objects)
 
     # ---------------------------------------------------------
@@ -175,17 +226,23 @@ def main():
     # 4) Define FOV and Materials
     # ---------------------------------------------------------
     fov_dict = fov_tensor_dict_3d(
-        n_voxels=(512, 512, 32), # Adjust grid size here
-        size_in_mm=(128.0, 128.0, 8.0),
+        n_voxels=(128, 128, 128), # Adjust grid size here
+        size_in_mm=(32.0, 32.0, 32.0),
         center_coordinates=(0.0, 0.0, 0.0),
-        n_subdivisions=(2, 2, 2),
+        n_subdivisions=(1, 1, 1),
     )
     Nx, Ny, Nz = [int(v.item()) for v in fov_dict["n voxels"]]
     
     # Map Materials
-    mu_table = torch.tensor([3.5, 0.475], dtype=DTYPE, device=device)
+    # Index 0 = plate, 1 = detector, 2 = hole void (negative, subtractive).
+    # mu values come from applied_config so the same script works for both
+    # MPH (defaults: 3.5 / 0.475) and SCT (4.0 / 0.35 / -4.0) layouts.
+    if hole_prisms is not None:
+        mu_table = torch.tensor([mu_plate, mu_det, -mu_plate], dtype=DTYPE, device=device)
+    else:
+        mu_table = torch.tensor([mu_plate, mu_det], dtype=DTYPE, device=device)
     mu_objects_expanded = mu_table[objects['material_index']]
-    mu_detector = torch.tensor(0.475, dtype=DTYPE, device=device)
+    mu_detector = torch.tensor(mu_det, dtype=DTYPE, device=device)
 
     # ---------------------------------------------------------
     # 5) Compute System Matrix (Target Only)
@@ -222,8 +279,13 @@ def main():
         ppdf_volume.scatter_(0, cols_t, vals_t)
 
     ppdf_volume = ppdf_volume.view(Nx, Ny, Nz)
-
-    with h5py.File(args.output, "w") as f:
+    output_path = args.output
+    if os.path.isdir(output_path):
+        # If the user provides a directory, create a default filename
+        filename = f"ppdf_det_{args.target_det}_layout_{args.layout}.h5"
+        output_path = os.path.join(output_path, filename)
+        
+    with h5py.File(output_path, "w") as f:
         f.create_dataset("ppdf_volume", data=ppdf_volume.cpu().numpy(), compression="gzip")
         f.attrs["target_detector"] = target_idx
 # ---------------------------------------------------------
