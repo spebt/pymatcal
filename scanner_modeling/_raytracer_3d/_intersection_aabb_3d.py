@@ -3,6 +3,12 @@ from torch import Tensor
 from .._config import DTYPE
 from typing import Tuple
 
+# Broad-phase uses the global DTYPE (float32) for the slab test.
+# When DTYPE was float64 this was overridden to float32 since the
+# output is boolean. Now that DTYPE is float32, this matches.
+_BROAD_DTYPE = DTYPE
+
+
 def ray_aabb_intersect(
     o: Tensor,          # (..., 3) ray origins in world coordinates
     d: Tensor,          # (..., 3) ray directions in world coordinates
@@ -37,6 +43,8 @@ def ray_aabb_intersect(
     - This is *axis-aligned* (AABB) and works in world coordinates.
     - It is intentionally cheap and vectorized, for broad-phase culling
       before narrow-phase OBB / convex-poly intersection.
+    - Uses float32 internally since the output is boolean — no precision
+      benefit from float64, and float32 halves memory / improves throughput.
     - Internally uses the standard slab method:
 
           inv_d = 1 / d_safe
@@ -65,15 +73,16 @@ def ray_aabb_intersect(
         )
 
     device = o.device
+    bp = _BROAD_DTYPE
 
-    # Cast to global DTYPE
-    o = o.to(device=device, dtype=DTYPE)
-    d = d.to(device=device, dtype=DTYPE)
-    aabb_min = aabb_min.to(device=device, dtype=DTYPE)
-    aabb_max = aabb_max.to(device=device, dtype=DTYPE)
+    # Cast to float32 for broad phase (boolean output — no precision loss)
+    o = o.to(device=device, dtype=bp)
+    d = d.to(device=device, dtype=bp)
+    aabb_min = aabb_min.to(device=device, dtype=bp)
+    aabb_max = aabb_max.to(device=device, dtype=bp)
 
     # Avoid division-by-zero for nearly-parallel rays
-    eps = torch.finfo(DTYPE).eps
+    eps = torch.finfo(bp).eps
     d_safe = torch.where(d.abs() < eps, torch.full_like(d, eps), d)
     inv_d = 1.0 / d_safe  # (*R, 3)
 
@@ -97,12 +106,8 @@ def ray_aabb_intersect(
     t_enter = t_min.max(dim=-1).values   # (*R, N_obj)
     t_exit = t_max.min(dim=-1).values    # (*R, N_obj)
 
-    zero = torch.zeros((), dtype=DTYPE, device=device)
+    zero = torch.zeros((), dtype=bp, device=device)
     hit_mask = t_exit >= torch.maximum(t_enter, zero)
-
-    # IMPORTANT:
-    #   - hit_mask is intentionally boolean and contains no t_enter / t_exit.
-    #   - Use it only to build candidate ray–object lists for the *narrow phase*.
 
     return hit_mask
 
@@ -116,11 +121,8 @@ def build_ray_object_candidate_lists(
     """
     Build per-ray candidate object lists using the ray–AABB broad phase.
 
-    This function is CPU-friendly:
-      - Rays are flattened to N_rays_total = prod(o.shape[:-1]).
-      - Rays are processed in chunks of size max_rays_per_chunk.
-      - Each chunk runs a fully vectorized slab test vs all objects.
-      - We only keep (ray_idx, obj_idx) for hits, as a compact structure.
+    Runs a single vectorized slab test on all rays at once (no internal
+    chunking — the caller is responsible for chunking if needed).
 
     Parameters
     ----------
@@ -136,40 +138,30 @@ def build_ray_object_candidate_lists(
         World-space AABB bounds for each object, shape (N_obj, 3).
 
     max_rays_per_chunk : int, optional
-        Maximum number of rays to process per chunk in the broad phase.
-        Must be > 0. Typical CPU-friendly values: 1_000 to 10_000.
+        Kept for API compatibility but no longer used internally.
+        The caller (compute_system_matrix_for_detector) already chunks
+        FOV blocks, so internal re-chunking is redundant.
 
     Returns
     -------
     obj_indices : Tensor
-        1D tensor of length N_pairs (int64) listing the object index
-        for each (ray, object) pair that passed the AABB test.
+        1D tensor of length N_pairs (int64) — object index for each
+        (ray, object) pair that passed the AABB test.
 
-    ray_offsets : Tensor
-        1D tensor (int64) of length N_rays_flat + 1, where
-            ray_offsets[r]   is the start index in `obj_indices`
-            ray_offsets[r+1] is the end index (exclusive)
-        for the r-th flattened ray (0 ≤ r < N_rays_flat).
-
-        For a given flattened ray index r:
-            candidate_objs_for_ray_r =
-                obj_indices[ray_offsets[r] : ray_offsets[r+1]]
+    ray_indices : Tensor
+        1D tensor of length N_pairs (int64) — flat ray index for each
+        hit pair, sorted in ascending order (row-major from nonzero).
+        Directly usable as sparse_ray_indices in ppdf_3d_local.
 
     ray_shape : tuple of int
-        The original ray batch shape (*R,), so you can map flattened
-        ray indices back to multi-dimensional indices if needed.
+        The original ray batch shape (*R,).
 
     Notes
     -----
-    - The flattened ray index r ∈ [0, N_rays_flat) corresponds to
-      the usual row-major indexing of o.view(-1, 3).
     - If there are no rays or no objects, the function returns:
         obj_indices = empty (0,)
-        ray_offsets = zeros(N_rays_flat + 1)
+        ray_indices = empty (0,)
     """
-    if max_rays_per_chunk <= 0:
-        raise ValueError(f"max_rays_per_chunk must be > 0, got {max_rays_per_chunk}")
-
     if o.shape != d.shape or o.shape[-1] != 3:
         raise ValueError(
             f"o and d must have the same shape (*, 3); got {o.shape} and {d.shape}"
@@ -195,66 +187,26 @@ def build_ray_object_candidate_lists(
 
     # Handle trivial cases early
     if n_rays == 0 or n_objs == 0:
-        obj_indices = torch.empty((0,), dtype=torch.int64, device=device)
-        ray_offsets = torch.zeros((n_rays + 1,), dtype=torch.int64, device=device)
-        return obj_indices, ray_offsets, ray_shape
+        empty = torch.empty((0,), dtype=torch.int64, device=device)
+        return empty, empty.clone(), ray_shape
 
     # Flatten rays to (N_rays, 3)
     o_flat = o.reshape(n_rays, 3)
     d_flat = d.reshape(n_rays, 3)
 
-    all_ray_idx = []
-    all_obj_idx = []
+    # Single vectorized broad-phase test (no internal chunking)
+    hit_mask = ray_aabb_intersect(o_flat, d_flat, aabb_min, aabb_max)
+    # hit_mask: (N_rays, N_obj)
 
-    start = 0
-    while start < n_rays:
-        end = min(start + max_rays_per_chunk, n_rays)
+    # Extract (ray_idx, obj_idx) pairs — nonzero returns row-major order
+    # so pairs are already sorted by ray index (no argsort needed)
+    hits = hit_mask.nonzero(as_tuple=False)  # (N_pairs, 2)
 
-        o_chunk = o_flat[start:end]  # (N_chunk, 3)
-        d_chunk = d_flat[start:end]  # (N_chunk, 3)
+    if hits.shape[0] == 0:
+        empty = torch.empty((0,), dtype=torch.int64, device=device)
+        return empty, empty.clone(), ray_shape
 
-        hit_mask = ray_aabb_intersect(o_chunk, d_chunk, aabb_min, aabb_max)
-        # hit_mask: (N_chunk, N_obj)
+    ray_indices = hits[:, 0]   # (N_pairs,) — flat ray index per hit, sorted
+    obj_indices = hits[:, 1]   # (N_pairs,) — object index per hit
 
-        if hit_mask.numel() > 0:
-            hits = hit_mask.nonzero(as_tuple=False)  # (N_hits_chunk, 2) [ray_in_chunk, obj]
-            if hits.numel() > 0:
-                ray_idx_global = hits[:, 0] + start  # map to [0, N_rays)
-                obj_idx = hits[:, 1]
-                all_ray_idx.append(ray_idx_global)
-                all_obj_idx.append(obj_idx)
-
-        start = end
-
-    if not all_ray_idx:
-        # No hits at all
-        obj_indices = torch.empty((0,), dtype=torch.int64, device=device)
-        ray_offsets = torch.zeros((n_rays + 1,), dtype=torch.int64, device=device)
-        return obj_indices, ray_offsets, ray_shape
-
-    ray_indices_flat = torch.cat(all_ray_idx)  # (N_pairs,)
-    obj_indices = torch.cat(all_obj_idx)       # (N_pairs,)
-
-    # Ensure hits are sorted by ray index (nonzero is row-major but we enforce)
-    sort_idx = torch.argsort(ray_indices_flat)
-    ray_indices_flat = ray_indices_flat[sort_idx]
-    obj_indices = obj_indices[sort_idx]
-
-    # Count hits per ray, then build prefix sums to get offsets
-    ray_counts = torch.bincount(
-        ray_indices_flat,
-        minlength=n_rays,
-    )  # (N_rays,)
-
-    ray_offsets = torch.empty(
-        (n_rays + 1,),
-        dtype=torch.int64,
-        device=device,
-    )
-    ray_offsets[0] = 0
-    ray_offsets[1:] = ray_counts.cumsum(0)
-    
-    # NOTE: This function deliberately never queries or returns L or S.
-    # It produces a sparse candidate structure that the narrow phase uses
-    # to decide *which* ray–object pairs to intersect exactly.
-    return obj_indices, ray_offsets, ray_shape
+    return obj_indices, ray_indices, ray_shape

@@ -1,4 +1,5 @@
 # pymatcal/scanner_modeling/_geometry_3d/_solid_angle_3d.py
+from __future__ import annotations
 
 from typing import Iterable, Sequence
 
@@ -37,8 +38,7 @@ def solid_angle_triangle(
     -------
     omega : Tensor
         Solid angle in steradians, shape equal to the broadcasted
-        leading dimensions of v0, v1, v2. Non-negative magnitude;
-        orientation of the triangle (winding) is not preserved.
+        leading dimensions of v0, v1, v2. Always non-negative.
 
     Notes
     -----
@@ -51,6 +51,9 @@ def solid_angle_triangle(
                        + (b·c) ||a|| )
 
     where a, b, c are vertex vectors from the observation point.
+    The absolute value of the triple product is used so that the result
+    is independent of triangle winding order and always non-negative.
+    Degenerate triangles (|triple| ≤ eps) are zeroed out.
     """
     v0 = v0.to(dtype=DTYPE)
     v1 = v1.to(dtype=DTYPE)
@@ -69,10 +72,9 @@ def solid_angle_triangle(
     ac = (a * c).sum(dim=-1)
     bc = (b * c).sum(dim=-1)
 
-    # Triple product a · (b × c)
+    # |a · (b × c)| — absolute value makes result winding-order independent
     cross_bc = torch.cross(b, c, dim=-1)
     triple = (a * cross_bc).sum(dim=-1)
-
     numer = triple.abs()
 
     denom = (
@@ -82,13 +84,12 @@ def solid_angle_triangle(
         + bc * la
     )
 
-    # Guard against degenerate cases
     eps_t = torch.tensor(eps, dtype=DTYPE, device=denom.device)
     denom_safe = torch.where(denom.abs() < eps_t, eps_t, denom)
 
     omega = 2.0 * torch.atan2(numer, denom_safe)
 
-    # For nearly-degenerate triangles, force Ω → 0
+    # Zero out degenerate triangles (collinear vertices or point at origin)
     omega = torch.where(numer <= eps_t, torch.zeros_like(omega), omega)
 
     return omega
